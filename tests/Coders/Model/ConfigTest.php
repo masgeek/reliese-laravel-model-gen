@@ -93,6 +93,31 @@ class ConfigTest extends TestCase
                 'ctKey',
                 'Connection Table Value'
             ],
+
+            'Connection Database Table Key' => [
+                [
+                    '@connections' => [
+                        'test_connection' => [
+                            'test' => [
+                                'my_table' => [
+                                    'cdtKey' => 'Connection Database Table Value'
+                                ]
+                            ]
+                        ],
+                    ]
+                ],
+                'cdtKey',
+                'Connection Database Table Value'
+            ],
+            'Table Key' => [
+                [
+                    'my_table' => [
+                        'tKey' => 'Table Value'
+                    ],
+                ],
+                'tKey',
+                'Table Value'
+            ],
             'Test Hierarchy Override for Schema' => [
                 [
                     '*' => [
@@ -188,6 +213,36 @@ class ConfigTest extends TestCase
                 ],
                 'FirstKey',
                 'A Sixth Value'
+            ],
+
+            'Test Hierarchy Override for Connection Database Table Key' => [
+                [
+                    '*' => [
+                        'FirstKey' => 'Some Value'
+                    ],
+                    'test' => [
+                        'FirstKey' => 'A Second Value',
+                        'my_table' => [
+                            'FirstKey' => 'A Third Value'
+                        ]
+                    ],
+                    '@connections' => [
+                        'test_connection' => [
+                            'FirstKey' => 'A Fourth Value',
+                            'test' => [
+                                'FirstKey' => 'A Fifth Value',
+                                'my_table' => [
+                                    'FirstKey' => 'A Seventh Value',
+                                ],
+                            ],
+                            'my_table' => [
+                                'FirstKey' => 'A Sixth Value',
+                            ]
+                        ]
+                    ]
+                ],
+                'FirstKey',
+                'A Seventh Value'
             ],
         ];
     }

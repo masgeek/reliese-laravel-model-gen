@@ -54,6 +54,11 @@ return [
 
         'parent' => Illuminate\Database\Eloquent\Model::class,
 
+        // Table specific parent override examples:
+        // 'users' => [
+        //     'parent' => Illuminate\Foundation\Auth\User::class,
+        // ],
+
         /*
         |--------------------------------------------------------------------------
         | Traits
@@ -523,8 +528,12 @@ return [
 //            'connection' => true,
 //            'users' => [
 //                'connection' => false,
+//                'parent' => \Illuminate\Foundation\Auth\User::class,
 //            ],
 //            'my_other_database' => [
+//                'users' => [
+//                    'parent' => \Illuminate\Foundation\Auth\User::class,
+//                ],
 //                'password_resets' => [
 //                    'connection' => false,
 //                ]
