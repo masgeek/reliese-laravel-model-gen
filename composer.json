@@ -1,5 +1,5 @@
 {
-    "name": "reliese/laravel-model-gen",
+    "name": "masgeek/laravel-model-gen",
     "description": "Reliese Laravel model generator for database-driven Eloquent model scaffolding.",
     "keywords": [
         "reliese",
@@ -9,8 +9,8 @@
     ],
     "homepage": "https://github.com/reliese/laravel-model-gen",
     "support": {
-        "issues": "https://github.com/reliese/laravel-model-gen/issues",
-        "source": "https://github.com/reliese/laravel-model-gen"
+        "issues": "https://github.com/masgeek/laravel-model-gen/issues",
+        "source": "https://github.com/masgeek/laravel-model-gen"
     },
     "license": "MIT",
     "authors": [
@@ -20,7 +20,7 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^8.3",
         "doctrine/dbal": ">=2.5",
         "illuminate/support": ">=5.1",
         "illuminate/database": ">=5.1",
