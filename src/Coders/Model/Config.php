@@ -37,10 +37,12 @@ class Config
     public function get(Blueprint $blueprint, $key, $default = null)
     {
         $priorityKeys = [
+            "@connections.{$blueprint->connection()}.{$blueprint->schema()}.{$blueprint->table()}.$key",
             "@connections.{$blueprint->connection()}.{$blueprint->table()}.$key",
             "@connections.{$blueprint->connection()}.{$blueprint->schema()}.$key",
             "@connections.{$blueprint->connection()}.$key",
             "{$blueprint->qualifiedTable()}.$key",
+            "{$blueprint->table()}.$key",
             "{$blueprint->schema()}.$key",
             "*.$key",
         ];
