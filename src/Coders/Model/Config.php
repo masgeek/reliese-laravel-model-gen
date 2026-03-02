@@ -36,6 +36,13 @@ class Config
      */
     public function get(Blueprint $blueprint, $key, $default = null)
     {
+        if ($key === 'parent') {
+            $tableConfig = Arr::get($this->config, $blueprint->table());
+            if (is_array($tableConfig) && isset($tableConfig['parent'])) {
+                return $tableConfig['parent'];
+            }
+        }
+
         $priorityKeys = [
             "@connections.{$blueprint->connection()}.{$blueprint->schema()}.{$blueprint->table()}.$key",
             "@connections.{$blueprint->connection()}.{$blueprint->table()}.$key",
@@ -47,8 +54,8 @@ class Config
             "*.$key",
         ];
 
-        foreach ($priorityKeys as $key) {
-            $value = Arr::get($this->config, $key);
+        foreach ($priorityKeys as $priorityKey) {
+            $value = Arr::get($this->config, $priorityKey);
 
             if (!is_null($value)) {
                 return $value;
