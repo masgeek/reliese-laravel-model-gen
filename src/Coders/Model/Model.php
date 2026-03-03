@@ -182,8 +182,12 @@ class Model
 
     protected function configure()
     {
+
+        $table = $this->blueprint->table();
+        $parentClass = $this->resolveParentClass($this->config('parent'), $table);
+
         $this->withNamespace($this->config('namespace'));
-        $this->withParentClass($this->config('parent'));
+        $this->withParentClass($parentClass);
 
         // Timestamps settings
         $this->withTimestamps($this->config('timestamps.enabled', $this->config('timestamps', true)));
@@ -227,7 +231,7 @@ class Model
             $this->parseColumn($column);
         }
 
-        if (! $this->loadRelations) {
+        if (!$this->loadRelations) {
             return;
         }
 
@@ -254,7 +258,7 @@ class Model
         // TODO: Check type cast is OK
         $cast = $column->type;
 
-        $propertyName = $this->usesPropertyConstants() ? 'self::'.strtoupper($column->name) : $column->name;
+        $propertyName = $this->usesPropertyConstants() ? 'self::' . strtoupper($column->name) : $column->name;
 
         // Due to some casting problems when converting null to a Carbon instance,
         // we are going to treat Soft Deletes field as string.
@@ -285,7 +289,7 @@ class Model
         $this->mutate($column->name);
 
         // Track comment hints
-        if (! empty($column->comment)) {
+        if (!empty($column->comment)) {
             $this->hints[$column->name] = $column->comment;
         }
 
@@ -333,9 +337,9 @@ class Model
      * @param string $castType
      * @param bool $nullable
      *
+     * @return string
      * @todo Make tests
      *
-     * @return string
      */
     public function phpTypeHint($castType, $nullable)
     {
@@ -361,7 +365,7 @@ class Model
         }
 
         if ($nullable) {
-            return $type.'|null';
+            return $type . '|null';
         }
 
         return $type;
@@ -418,13 +422,13 @@ class Model
      */
     public function shouldPluralizeTableName()
     {
-        $pluralize = (bool) $this->config('pluralize', true);
+        $pluralize = (bool)$this->config('pluralize', true);
 
         $overridePluralizeFor = $this->config('override_pluralize_for', []);
         if (count($overridePluralizeFor) > 0) {
             foreach ($overridePluralizeFor as $except) {
                 if ($except == $this->getTable()) {
-                    return ! $pluralize;
+                    return !$pluralize;
                 }
             }
         }
@@ -437,7 +441,7 @@ class Model
      */
     public function shouldLowerCaseTableName()
     {
-        return (bool) $this->config('lower_table_name_first', false);
+        return (bool)$this->config('lower_table_name_first', false);
     }
 
     /**
@@ -482,7 +486,7 @@ class Model
     public function getBaseNamespace()
     {
         return $this->usesBaseFiles()
-            ? $this->getNamespace().'\\Base'
+            ? $this->getNamespace() . '\\Base'
             : $this->getNamespace();
     }
 
@@ -493,9 +497,30 @@ class Model
      */
     public function withParentClass($parent)
     {
+
         $this->parentClass = '\\' . ltrim($parent, '\\');
 
         return $this;
+    }
+
+    protected function resolveParentClass($parentConfig, string $table): string
+    {
+        if (is_array($parentConfig)) {
+            // '*' is guaranteed, so fallback exists
+            return $parentConfig[$table] ?? $parentConfig['*'];
+        }
+
+        if (is_string($parentConfig) && $parentConfig !== '') {
+            return $parentConfig;
+        }
+
+        throw new \InvalidArgumentException(
+            sprintf(
+                'Invalid parent class configuration for table "%s". Expected string or array, got %s.',
+                $table,
+                gettype($parentConfig)
+            )
+        );
     }
 
     /**
@@ -511,7 +536,7 @@ class Model
      */
     public function getQualifiedUserClassName()
     {
-        return '\\'.$this->getNamespace().'\\'.$this->getClassName();
+        return '\\' . $this->getNamespace() . '\\' . $this->getClassName();
     }
 
     /**
@@ -563,8 +588,8 @@ class Model
     public function usesTimestamps()
     {
         return $this->timestamps &&
-               $this->blueprint->hasColumn($this->getCreatedAtField()) &&
-               $this->blueprint->hasColumn($this->getUpdatedAtField());
+            $this->blueprint->hasColumn($this->getCreatedAtField()) &&
+            $this->blueprint->hasColumn($this->getUpdatedAtField());
     }
 
     /**
@@ -593,7 +618,7 @@ class Model
     public function hasCustomCreatedAtField()
     {
         return $this->usesTimestamps() &&
-               $this->getCreatedAtField() != $this->getDefaultCreatedAtField();
+            $this->getCreatedAtField() != $this->getDefaultCreatedAtField();
     }
 
     /**
@@ -630,7 +655,7 @@ class Model
     public function hasCustomUpdatedAtField()
     {
         return $this->usesTimestamps() &&
-               $this->getUpdatedAtField() != $this->getDefaultUpdatedAtField();
+            $this->getUpdatedAtField() != $this->getDefaultUpdatedAtField();
     }
 
     /**
@@ -659,7 +684,7 @@ class Model
     public function usesSoftDeletes()
     {
         return $this->softDeletes &&
-               $this->blueprint->hasColumn($this->getDeletedAtField());
+            $this->blueprint->hasColumn($this->getDeletedAtField());
     }
 
     /**
@@ -688,7 +713,7 @@ class Model
     public function hasCustomDeletedAtField()
     {
         return $this->usesSoftDeletes() &&
-               $this->getDeletedAtField() != $this->getDefaultDeletedAtField();
+            $this->getDeletedAtField() != $this->getDefaultDeletedAtField();
     }
 
     /**
@@ -706,7 +731,7 @@ class Model
     {
         $traits = $this->config('use', []);
 
-        if (! is_array($traits)) {
+        if (!is_array($traits)) {
             throw new \RuntimeException('Config use must be an array of valid traits to append to each model.');
         }
 
@@ -725,7 +750,7 @@ class Model
         return false === $this->shouldQualifyTableName() ||
             $this->shouldRemoveTablePrefix() ||
             $this->blueprint->table() != Str::plural($this->getRecordName()) ||
-            ! $this->shouldPluralizeTableName();
+            !$this->shouldPluralizeTableName();
     }
 
     /**
@@ -733,7 +758,7 @@ class Model
      */
     public function shouldRemoveTablePrefix()
     {
-        return ! empty($this->tablePrefix);
+        return !empty($this->tablePrefix);
     }
 
     /**
@@ -785,7 +810,7 @@ class Model
      */
     public function shouldShowConnection()
     {
-        return (bool) $this->showConnection;
+        return (bool)$this->showConnection;
     }
 
     /**
@@ -802,7 +827,7 @@ class Model
     public function hasCustomPrimaryKey()
     {
         return count($this->primaryKeys->columns) == 1 &&
-               $this->getPrimaryKey() != $this->getDefaultPrimaryKeyField();
+            $this->getPrimaryKey() != $this->getDefaultPrimaryKeyField();
     }
 
     /**
@@ -814,8 +839,8 @@ class Model
     }
 
     /**
-     * @todo: Improve it
      * @return string
+     * @todo: Improve it
      */
     public function getPrimaryKey()
     {
@@ -836,8 +861,8 @@ class Model
     }
 
     /**
-     * @todo: Check whether it is necessary
      * @return bool
+     * @todo: Check whether it is necessary
      */
     public function hasCustomPrimaryKeyCast()
     {
@@ -857,7 +882,7 @@ class Model
      */
     public function doesNotAutoincrement()
     {
-        return ! $this->autoincrement();
+        return !$this->autoincrement();
     }
 
     /**
@@ -877,7 +902,7 @@ class Model
      */
     public function withPerPage($perPage)
     {
-        $this->perPage = (int) $perPage;
+        $this->perPage = (int)$perPage;
     }
 
     /**
@@ -961,7 +986,7 @@ class Model
      */
     public function hasCasts()
     {
-        return ! empty($this->getCasts());
+        return !empty($this->getCasts());
     }
 
     /**
@@ -984,7 +1009,7 @@ class Model
      */
     public function hasDates()
     {
-        return ! empty($this->getDates());
+        return !empty($this->getDates());
     }
 
     /**
@@ -1005,7 +1030,7 @@ class Model
      */
     public function usesSnakeAttributes()
     {
-        return (bool) $this->config('snake_attributes', true);
+        return (bool)$this->config('snake_attributes', true);
     }
 
     /**
@@ -1013,7 +1038,7 @@ class Model
      */
     public function doesNotUseSnakeAttributes()
     {
-        return ! $this->usesSnakeAttributes();
+        return !$this->usesSnakeAttributes();
     }
 
     /**
@@ -1021,7 +1046,7 @@ class Model
      */
     public function hasHints()
     {
-        return ! empty($this->getHints());
+        return !empty($this->getHints());
     }
 
     /**
@@ -1063,7 +1088,7 @@ class Model
      */
     public function hasRelations()
     {
-        return ! empty($this->relations);
+        return !empty($this->relations);
     }
 
     /**
@@ -1083,7 +1108,7 @@ class Model
     {
         $attributes = $this->config('hidden', []);
 
-        if (! is_array($attributes)) {
+        if (!is_array($attributes)) {
             throw new \RuntimeException('Config field [hidden] must be an array of attributes to hide from array or json.');
         }
 
@@ -1101,7 +1126,7 @@ class Model
      */
     public function hasHidden()
     {
-        return ! empty($this->hidden);
+        return !empty($this->hidden);
     }
 
     /**
@@ -1121,7 +1146,7 @@ class Model
     {
         $guarded = $this->config('guarded', []);
 
-        if (! is_array($guarded)) {
+        if (!is_array($guarded)) {
             throw new \RuntimeException('Config field [guarded] must be an array of attributes to protect from mass assignment.');
         }
 
@@ -1149,7 +1174,7 @@ class Model
      */
     public function hasFillable()
     {
-        return ! empty($this->fillable);
+        return !empty($this->fillable);
     }
 
     /**
@@ -1175,8 +1200,8 @@ class Model
      */
     public function isPrimaryKey(Fluent $command)
     {
-        foreach ((array) $this->primaryKeys->columns as $column) {
-            if (! in_array($column, $command->columns)) {
+        foreach ((array)$this->primaryKeys->columns as $column) {
+            if (!in_array($column, $command->columns)) {
                 return false;
             }
         }
@@ -1220,7 +1245,7 @@ class Model
      */
     public function indentWithSpace()
     {
-        return (int) $this->config('indent_with_space', 0);
+        return (int)$this->config('indent_with_space', 0);
     }
 
     /**
@@ -1236,7 +1261,7 @@ class Model
      */
     public function doesNotUseBaseFiles()
     {
-        return ! $this->usesBaseFiles();
+        return !$this->usesBaseFiles();
     }
 
     /**

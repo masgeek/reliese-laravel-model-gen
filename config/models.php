@@ -55,8 +55,9 @@ return [
         'parent' => Illuminate\Database\Eloquent\Model::class,
 
         // Table specific parent override examples:
-        // 'users' => [
-        //     'parent' => Illuminate\Foundation\Auth\User::class,
+        // 'parent' => [
+        //    'users' => Illuminate\Database\Eloquent\Model::class,
+        //    '*' => Illuminate\Database\Eloquent\Model::class,,
         // ],
 
         /*
