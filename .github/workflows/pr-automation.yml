@@ -1,0 +1,24 @@
+name: Auto Approve
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-auto-approve:
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Auto approve PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          review-message: "Auto approved automated PR"
+          github-token: "${{ steps.generate-token.outputs.token }}"
