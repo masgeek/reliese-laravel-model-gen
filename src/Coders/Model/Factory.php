@@ -258,6 +258,7 @@ class Factory
         $template = str_replace('{{properties}}', $properties, $template);
 
         $parentClass = $model->getParentClass();
+
         $dependencies = array_merge($dependencies, $this->shortenAndExtractImportableDependencies($parentClass, $model));
         $template = str_replace('{{parent}}', $parentClass, $template);
 
