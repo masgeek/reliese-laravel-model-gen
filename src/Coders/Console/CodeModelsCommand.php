@@ -16,7 +16,9 @@ class CodeModelsCommand extends Command
     protected $signature = 'code:models
                             {--s|schema= : The name of the MySQL database}
                             {--c|connection= : The name of the connection}
-                            {--t|table= : The name of the table}';
+                            {--t|table= : The name of a specific table to generate}
+                            {--view= : The name of a specific view to generate}
+                            {--dry-run : List what would be generated without writing any files}';
 
     /**
      * The console command description.
@@ -57,17 +59,35 @@ class CodeModelsCommand extends Command
         $connection = $this->getConnection();
         $schema = $this->getSchema($connection);
         $table = $this->getTable();
+        $view = $this->getView();
+        $dryRun = (bool) $this->option('dry-run');
 
-        // Check whether we just need to generate one table
-        if ($table) {
-            $this->models->on($connection)->create($schema, $table);
-            $this->info("Check out your models for $table");
+        $factory = $this->models
+            ->on($connection)
+            ->setOutput(function ($message) {
+                $this->line($message);
+            });
+
+        if ($dryRun) {
+            $factory->setDryRun(true);
+            $this->warn('[dry-run] No files will be written.');
         }
 
-        // Otherwise map the whole database
-        else {
-            $this->models->on($connection)->map($schema);
-            $this->info("Check out your models for $schema");
+        if ($table) {
+            $factory->create($schema, $table);
+            if (! $dryRun) {
+                $this->info("Check out your model for $table");
+            }
+        } elseif ($view) {
+            $factory->create($schema, $view);
+            if (! $dryRun) {
+                $this->info("Check out your model for view $view");
+            }
+        } else {
+            $factory->map($schema);
+            if (! $dryRun) {
+                $this->info("Check out your models for $schema");
+            }
         }
     }
 
@@ -80,7 +100,7 @@ class CodeModelsCommand extends Command
     }
 
     /**
-     * @param $connection
+     * @param string $connection
      *
      * @return string
      */
@@ -90,10 +110,18 @@ class CodeModelsCommand extends Command
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     protected function getTable()
     {
         return $this->option('table');
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getView()
+    {
+        return $this->option('view');
     }
 }

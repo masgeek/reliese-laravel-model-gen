@@ -76,12 +76,31 @@ class Schema implements \Reliese\Meta\Schema
         $this->connection->raw('\c '.$this->wrap($this->schema));
         $tables = $this->fetchTables($this->schema);
         foreach ($tables as $table) {
-            $blueprint = new Blueprint($this->connection->getName(), $this->schema, $table);
-            $this->fillColumns($blueprint);
-            $this->fillConstraints($blueprint);
-            $this->tables[$table] = $blueprint;
+            $this->loadTable($table);
+        }
+        $views = $this->fetchViews();
+        foreach ($views as $view) {
+            $this->loadTable($view, true);
+        }
+        $materializedViews = $this->fetchMaterializedViews();
+        foreach ($materializedViews as $view) {
+            $this->loadTable($view, true);
         }
         $this->loaded = true;
+    }
+
+    /**
+     * @param string $table
+     * @param bool $isView
+     */
+    protected function loadTable($table, $isView = false)
+    {
+        $blueprint = new Blueprint($this->connection->getName(), $this->schema, $table, $isView);
+        $this->fillColumns($blueprint);
+        if (! $isView) {
+            $this->fillConstraints($blueprint);
+        }
+        $this->tables[$table] = $blueprint;
     }
 
     /**
@@ -89,12 +108,38 @@ class Schema implements \Reliese\Meta\Schema
      *
      * @return array
      */
-    protected function fetchTables()
+    protected function fetchTables($schema)
     {
         $rows = $this->arraify($this->connection->select(
             "SELECT * FROM pg_tables where schemaname='$this->schema_database'"
         ));
         $names = array_column($rows, 'tablename');
+
+        return Arr::flatten($names);
+    }
+
+    /**
+     * @return array
+     */
+    protected function fetchViews()
+    {
+        $rows = $this->arraify($this->connection->select(
+            "SELECT viewname FROM pg_views WHERE schemaname='$this->schema_database'"
+        ));
+        $names = array_column($rows, 'viewname');
+
+        return Arr::flatten($names);
+    }
+
+    /**
+     * @return array
+     */
+    protected function fetchMaterializedViews()
+    {
+        $rows = $this->arraify($this->connection->select(
+            "SELECT matviewname FROM pg_matviews WHERE schemaname='$this->schema_database'"
+        ));
+        $names = array_column($rows, 'matviewname');
 
         return Arr::flatten($names);
     }

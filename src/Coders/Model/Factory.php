@@ -52,6 +52,16 @@ class Factory
     protected $mutators = [];
 
     /**
+     * @var callable|null
+     */
+    protected $outputCallback = null;
+
+    /**
+     * @var bool
+     */
+    protected $dryRun = false;
+
+    /**
      * ModelsFactory constructor.
      *
      * @param \Illuminate\Database\DatabaseManager $db
@@ -102,6 +112,43 @@ class Factory
     }
 
     /**
+     * Register a callable that receives progress messages during generation.
+     *
+     * @param callable $callback
+     * @return $this
+     */
+    public function setOutput(callable $callback)
+    {
+        $this->outputCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Enable dry-run mode: introspect schema and report what would be generated
+     * without writing any files to disk.
+     *
+     * @param bool $dryRun
+     * @return $this
+     */
+    public function setDryRun($dryRun = true)
+    {
+        $this->dryRun = $dryRun;
+
+        return $this;
+    }
+
+    /**
+     * @param string $message
+     */
+    protected function output($message)
+    {
+        if ($this->outputCallback) {
+            ($this->outputCallback)($message);
+        }
+    }
+
+    /**
      * @param string $schema
      */
     public function map($schema)
@@ -113,6 +160,9 @@ class Factory
         $mapper = $this->makeSchema($schema);
 
         foreach ($mapper->tables() as $blueprint) {
+            if ($blueprint->isView() && ! $this->config($blueprint, 'with_views', false)) {
+                continue;
+            }
             if ($this->shouldTakeOnly($blueprint) && $this->shouldNotExclude($blueprint)) {
                 $this->create($mapper->schema(), $blueprint->table());
             }
@@ -162,6 +212,21 @@ class Factory
     public function create($schema, $table)
     {
         $model = $this->makeModel($schema, $table);
+        $modelPath = $this->modelPath($model, $model->usesBaseFiles() ? ['Base'] : []);
+        $type = $model->isView() ? 'view' : 'table';
+
+        $this->output(sprintf(
+            '  %s <fg=cyan>%s</> → <fg=green>%s</> (<fg=yellow>%s</>)',
+            $type === 'view' ? '[view ]' : '[table]',
+            $table,
+            $model->getClassName(),
+            $modelPath
+        ));
+
+        if ($this->dryRun) {
+            return;
+        }
+
         $template = $this->prepareTemplate($model, 'model');
 
         $file = $this->fillTemplate($template, $model);
@@ -170,7 +235,7 @@ class Factory
             $file = str_replace("\t", str_repeat(' ', $model->indentWithSpace()), $file);
         }
 
-        $this->files->put($this->modelPath($model, $model->usesBaseFiles() ? ['Base'] : []), $file);
+        $this->files->put($modelPath, $file);
 
         if ($this->needsUserFile($model)) {
             $this->createUserFile($model);
@@ -473,6 +538,10 @@ class Factory
 
         if ($model->hasFillable() && ($model->doesNotUseBaseFiles() || $model->fillableInBaseFiles())) {
             $body .= $this->class->field('fillable', $model->getFillable(), ['before' => "\n"]);
+        }
+
+        if ($model->isView()) {
+            $body .= $this->class->field('guarded', ['*'], ['before' => "\n", 'visibility' => 'public']);
         }
 
         if ($model->hasHints() && $model->usesHints()) {
