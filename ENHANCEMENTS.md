@@ -44,18 +44,18 @@ Check off each item as it is implemented and merged.
 
 ## View Model Improvements
 
-- [ ] **Auto-disable writes for view models**
+- [x] **Auto-disable writes for view models**
   When generating a model for a view, set `$fillable = []` and emit `$guarded = ['*']`
   so Eloquent refuses mass-assignment on a read-only source.
   _File:_ `src/Coders/Model/Factory.php` (`body()` method), `src/Coders/Model/Model.php`
 
-- [ ] **PostgreSQL materialized views support**
+- [x] **PostgreSQL materialized views support**
   `pg_views` covers only regular views; `pg_matviews` is a separate catalog.
   Add a `fetchMaterializedViews()` method and load them alongside regular views
   when `with_views` is enabled.
   _File:_ `src/Meta/Postgres/Schema.php`
 
-- [ ] **View-specific parent class config**
+- [x] **View-specific parent class config**
   Allow a `view_parent` config key (parallel to `parent`) so view models can extend
   a different base class — for example a `ReadOnlyModel` that throws on
   `save()` / `delete()` / `update()`.
@@ -105,9 +105,9 @@ Check off each item as it is implemented and merged.
 | 3 | Command UX | `--view` CLI flag | [ ] |
 | 4 | Bug | PostgreSQL `fetchTables()` signature | [x] |
 | 5 | Bug | MySQL `fillConstraints()` short-circuit for views | [x] |
-| 6 | Views | Auto-disable writes for view models | [ ] |
-| 7 | Views | PostgreSQL materialized views | [ ] |
-| 8 | Views | View-specific parent class config | [ ] |
+| 6 | Views | Auto-disable writes for view models | [x] |
+| 7 | Views | PostgreSQL materialized views | [x] |
+| 8 | Views | View-specific parent class config | [x] |
 | 9 | Codegen | `strict_types` config option | [ ] |
 | 10 | Codegen | PHP 8.1 enum casts | [ ] |
 | 11 | Codegen | Nullable type-hint style config | [ ] |
