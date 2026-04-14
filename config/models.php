@@ -61,6 +61,34 @@ return [
         // ],
 
         /*
+      |--------------------------------------------------------------------------
+      | Include Database Views
+      |--------------------------------------------------------------------------
+      |
+      | By default, database views are excluded from model generation.
+      | Set this to true to also generate models for views. Generated view
+      | models will have no timestamps or soft deletes unless those columns
+      | are present in the view, and no foreign-key relationships since
+      | views do not carry constraint metadata.
+      |
+      */
+        'with_views' => false,
+
+        /*
+        |--------------------------------------------------------------------------
+        | View Model Parent Class
+        |--------------------------------------------------------------------------
+        |
+        | When generating models for views you may want them to extend a different
+        | base class than regular table models — for example a ReadOnlyModel that
+        | throws on save() / delete(). Set this to a fully-qualified class name to
+        | override the default `parent` for view-backed models only.
+        | When null, view models fall back to the `parent` setting above.
+        |
+        */
+        'view_parent' => null,
+        
+        /*
         |--------------------------------------------------------------------------
         | Traits
         |--------------------------------------------------------------------------
@@ -467,20 +495,6 @@ return [
         |
         */
         'enable_return_types' => false,
-
-        /*
-        |--------------------------------------------------------------------------
-        | Include Database Views
-        |--------------------------------------------------------------------------
-        |
-        | By default, database views are excluded from model generation.
-        | Set this to true to also generate models for views. Generated view
-        | models will have no timestamps or soft deletes unless those columns
-        | are present in the view, and no foreign-key relationships since
-        | views do not carry constraint metadata.
-        |
-        */
-        'with_views' => false,
     ],
 
     /*
