@@ -113,6 +113,9 @@ class Factory
         $mapper = $this->makeSchema($schema);
 
         foreach ($mapper->tables() as $blueprint) {
+            if ($blueprint->isView() && ! $this->config($blueprint, 'with_views', false)) {
+                continue;
+            }
             if ($this->shouldTakeOnly($blueprint) && $this->shouldNotExclude($blueprint)) {
                 $this->create($mapper->schema(), $blueprint->table());
             }

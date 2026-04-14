@@ -2,6 +2,7 @@
 
 namespace Reliese\Meta\Sqlite;
 
+use Illuminate\Support\Arr;
 use Reliese\Meta\Blueprint;
 use Illuminate\Support\Fluent;
 use Illuminate\Database\Connection;
@@ -62,13 +63,27 @@ class Schema implements \Reliese\Meta\Schema
     protected function load()
     {
         $tables = $this->fetchTables();
-
         foreach ($tables as $table) {
-            $blueprint = new Blueprint($this->connection->getName(), $this->schema, $table);
-            $this->fillColumns($blueprint);
-            $this->fillConstraints($blueprint);
-            $this->tables[$table] = $blueprint;
+            $this->loadTable($table);
         }
+        $views = $this->fetchViews();
+        foreach ($views as $view) {
+            $this->loadTable($view, true);
+        }
+    }
+
+    /**
+     * @param string $table
+     * @param bool $isView
+     */
+    protected function loadTable($table, $isView = false)
+    {
+        $blueprint = new Blueprint($this->connection->getName(), $this->schema, $table, $isView);
+        $this->fillColumns($blueprint);
+        if (! $isView) {
+            $this->fillConstraints($blueprint);
+        }
+        $this->tables[$table] = $blueprint;
     }
 
     /**
@@ -84,6 +99,19 @@ class Schema implements \Reliese\Meta\Schema
             'sqlite_sequence',
             'sqlite_stat1',
         ]);
+    }
+
+    /**
+     * @return array
+     */
+    protected function fetchViews()
+    {
+        $rows = $this->arraify($this->connection->select(
+            "SELECT name FROM sqlite_master WHERE type='view'"
+        ));
+        $names = array_column($rows, 'name');
+
+        return Arr::flatten($names);
     }
 
     /**

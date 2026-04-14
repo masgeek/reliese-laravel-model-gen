@@ -467,6 +467,20 @@ return [
         |
         */
         'enable_return_types' => false,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Include Database Views
+        |--------------------------------------------------------------------------
+        |
+        | By default, database views are excluded from model generation.
+        | Set this to true to also generate models for views. Generated view
+        | models will have no timestamps or soft deletes unless those columns
+        | are present in the view, and no foreign-key relationships since
+        | views do not carry constraint metadata.
+        |
+        */
+        'with_views' => false,
     ],
 
     /*

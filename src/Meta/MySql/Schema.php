@@ -125,10 +125,13 @@ class Schema implements \Reliese\Meta\Schema
      */
     protected function fillConstraints(Blueprint $blueprint)
     {
+        if ($blueprint->isView()) {
+            return;
+        }
+
         $row = $this->arraify($this->connection->select('SHOW CREATE TABLE '.$this->wrap($blueprint->qualifiedTable())));
         $row = array_change_key_case($row[0]);
-        $sql = ($blueprint->isView() ? $row['create view'] : $row['create table']);
-        $sql = str_replace('`', '', $sql);
+        $sql = str_replace('`', '', $row['create table']);
 
         $this->fillPrimaryKey($sql, $blueprint);
         $this->fillIndexes($sql, $blueprint);
