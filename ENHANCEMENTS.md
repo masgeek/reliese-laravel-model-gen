@@ -7,18 +7,18 @@ Check off each item as it is implemented and merged.
 
 ## Command UX
 
-- [ ] **`--dry-run` flag**
+- [x] **`--dry-run` flag**
   Add a `--dry-run` option to `code:models` that lists every table/view that would be generated
   (class name + output file path) without writing any files.
   Useful for auditing a schema before the first run.
   _File:_ `src/Coders/Console/CodeModelsCommand.php`, `src/Coders/Model/Factory.php`
 
-- [ ] **Per-table progress output**
+- [x] **Per-table progress output**
   Emit a `$this->line()` message for each table/view as it is processed so large
   databases give visible feedback instead of silent running.
   _File:_ `src/Coders/Console/CodeModelsCommand.php`, `src/Coders/Model/Factory.php`
 
-- [ ] **`--view` CLI flag**
+- [x] **`--view` CLI flag**
   Add `--view=<name>` as a CLI complement to `--table`, allowing a single view model to
   be generated without enabling `with_views` globally in config.
   Example: `php artisan code:models --view=user_summary`
@@ -100,9 +100,9 @@ Check off each item as it is implemented and merged.
 
 | # | Area | Item | Done |
 |---|------|------|------|
-| 1 | Command UX | `--dry-run` flag | [ ] |
-| 2 | Command UX | Per-table progress output | [ ] |
-| 3 | Command UX | `--view` CLI flag | [ ] |
+| 1 | Command UX | `--dry-run` flag | [x] |
+| 2 | Command UX | Per-table progress output | [x] |
+| 3 | Command UX | `--view` CLI flag | [x] |
 | 4 | Bug | PostgreSQL `fetchTables()` signature | [x] |
 | 5 | Bug | MySQL `fillConstraints()` short-circuit for views | [x] |
 | 6 | Views | Auto-disable writes for view models | [x] |

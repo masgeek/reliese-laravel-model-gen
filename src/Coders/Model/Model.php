@@ -184,7 +184,10 @@ class Model
     {
 
         $table = $this->blueprint->table();
-        $parentClass = $this->resolveParentClass($this->config('parent'), $table);
+        $viewParent = $this->blueprint->isView() ? $this->config('view_parent') : null;
+        $parentClass = $viewParent
+            ? $this->resolveParentClass($viewParent, $table)
+            : $this->resolveParentClass($this->config('parent'), $table);
 
         $this->withNamespace($this->config('namespace'));
         $this->withParentClass($parentClass);
@@ -282,7 +285,7 @@ class Model
             $this->hidden[] = $propertyName;
         }
 
-        if ($this->isFillable($column->name)) {
+        if (! $this->isView() && $this->isFillable($column->name)) {
             $this->fillable[] = $propertyName;
         }
 
@@ -1191,6 +1194,14 @@ class Model
     public function getBlueprint()
     {
         return $this->blueprint;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isView()
+    {
+        return $this->blueprint->isView();
     }
 
     /**

@@ -82,6 +82,10 @@ class Schema implements \Reliese\Meta\Schema
         foreach ($views as $view) {
             $this->loadTable($view, true);
         }
+        $materializedViews = $this->fetchMaterializedViews();
+        foreach ($materializedViews as $view) {
+            $this->loadTable($view, true);
+        }
         $this->loaded = true;
     }
 
@@ -123,6 +127,19 @@ class Schema implements \Reliese\Meta\Schema
             "SELECT viewname FROM pg_views WHERE schemaname='$this->schema_database'"
         ));
         $names = array_column($rows, 'viewname');
+
+        return Arr::flatten($names);
+    }
+
+    /**
+     * @return array
+     */
+    protected function fetchMaterializedViews()
+    {
+        $rows = $this->arraify($this->connection->select(
+            "SELECT matviewname FROM pg_matviews WHERE schemaname='$this->schema_database'"
+        ));
+        $names = array_column($rows, 'matviewname');
 
         return Arr::flatten($names);
     }
