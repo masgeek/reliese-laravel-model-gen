@@ -4,6 +4,7 @@ namespace Reliese\Coders;
 
 use Reliese\Support\Classify;
 use Reliese\Coders\Model\Config;
+use Reliese\Meta\SchemaManager;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Reliese\Coders\Console\CodeModelsCommand;
@@ -41,7 +42,22 @@ class CodersServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerCustomMappers();
         $this->registerModelFactory();
+    }
+
+    /**
+     * Register any custom schema mappers defined in config/models.php.
+     *
+     * @return void
+     */
+    protected function registerCustomMappers()
+    {
+        $mappers = $this->app->make('config')->get('models.custom_mappers', []);
+
+        foreach ($mappers as $connection => $mapper) {
+            SchemaManager::register($connection, $mapper);
+        }
     }
 
     /**

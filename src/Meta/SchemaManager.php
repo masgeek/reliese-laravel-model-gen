@@ -61,7 +61,12 @@ class SchemaManager implements IteratorAggregate
     public function boot()
     {
         if (! $this->hasMapping()) {
-            throw new RuntimeException("There is no Schema Mapper registered for [{$this->type()}] connection.");
+            throw new RuntimeException(
+                "There is no Schema Mapper registered for [{$this->type()}] connection. ".
+                "Add a 'custom_mappers' entry to config/models.php mapping this class to a ".
+                "built-in mapper (Reliese\\Meta\\MySql\\Schema, Reliese\\Meta\\Postgres\\Schema, ".
+                "or Reliese\\Meta\\Sqlite\\Schema)."
+            );
         }
 
         $schemas = forward_static_call([$this->getMapper(), 'schemas'], $this->connection);
@@ -102,7 +107,37 @@ class SchemaManager implements IteratorAggregate
      */
     protected function getMapper()
     {
-        return static::$lookup[$this->type()];
+        $type = $this->type();
+
+        if (array_key_exists($type, static::$lookup)) {
+            return static::$lookup[$type];
+        }
+
+        // Collect every registered entry whose key class the connection is an instance of,
+        // then return the mapper for the most-derived key class. This ensures a custom mapper
+        // registered for App\TenantConnection wins over the built-in MySqlConnection entry
+        // even though both match via instanceof.
+        $matches = [];
+        foreach (static::$lookup as $connectionClass => $mapper) {
+            if ($this->connection instanceof $connectionClass) {
+                $matches[$connectionClass] = $mapper;
+            }
+        }
+
+        foreach ($matches as $candidateClass => $mapper) {
+            $hasMoreSpecificMatch = false;
+            foreach ($matches as $otherClass => $_) {
+                if ($candidateClass !== $otherClass && is_a($otherClass, $candidateClass, true)) {
+                    $hasMoreSpecificMatch = true;
+                    break;
+                }
+            }
+            if (! $hasMoreSpecificMatch) {
+                return $mapper;
+            }
+        }
+
+        return static::$lookup[$type];
     }
 
     /**
@@ -118,17 +153,44 @@ class SchemaManager implements IteratorAggregate
      */
     protected function hasMapping()
     {
-        return array_key_exists($this->type(), static::$lookup);
+        if (array_key_exists($this->type(), static::$lookup)) {
+            return true;
+        }
+
+        foreach (array_keys(static::$lookup) as $connectionClass) {
+            if ($this->connection instanceof $connectionClass) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Register a new connection mapper.
      *
-     * @param string $connection
-     * @param string $mapper
+     * @param string $connection Fully-qualified connection class name
+     * @param string $mapper     Fully-qualified mapper class name (must implement Schema)
+     *
+     * @throws \InvalidArgumentException if the mapper class does not exist or does not implement Schema
      */
     public static function register($connection, $mapper)
     {
+        if (! class_exists($mapper)) {
+            throw new \InvalidArgumentException(
+                "Custom mapper [{$mapper}] for connection [{$connection}] does not exist. ".
+                "Check the 'custom_mappers' entry in config/models.php."
+            );
+        }
+
+        if (! is_a($mapper, Schema::class, true)) {
+            throw new \InvalidArgumentException(
+                "Custom mapper [{$mapper}] must implement [".Schema::class.']. '.
+                "Built-in options: Reliese\\Meta\\MySql\\Schema, Reliese\\Meta\\Postgres\\Schema, ".
+                "Reliese\\Meta\\Sqlite\\Schema."
+            );
+        }
+
         static::$lookup[$connection] = $mapper;
     }
 

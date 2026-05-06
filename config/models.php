@@ -509,6 +509,36 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Schema Mappers
+    |--------------------------------------------------------------------------
+    |
+    | If you use a custom or third-party database connection class that is not
+    | natively supported by this package (e.g. a PgBouncer connection wrapper
+    | or any other connection decorator), you can register its schema mapper
+    | here. The key must be the fully-qualified class name of the connection
+    | and the value must be the fully-qualified class name of the schema mapper
+    | that should handle it.
+    |
+    | Built-in mapper classes you can reuse:
+    |   Reliese\Meta\MySql\Schema    — for MySQL/MariaDB-compatible connections
+    |   Reliese\Meta\Postgres\Schema — for PostgreSQL-compatible connections
+    |   Reliese\Meta\Sqlite\Schema   — for SQLite-compatible connections
+    |
+    | Example:
+    |   'custom_mappers' => [
+    |       \Vermaysha\PgbouncerLaravelExtension\PostgresPGBouncerExtension::class
+    |           => \Reliese\Meta\Postgres\Schema::class,
+    |   ],
+    |
+    */
+
+    // 'custom_mappers' => [
+    //     \Vermaysha\PgbouncerLaravelExtension\PostgresPGBouncerExtension::class
+    //         => \Reliese\Meta\Postgres\Schema::class,
+    // ],
+
     // 'shop' => [
     //     'path' => app_path(),
     //     'namespace' => 'App',
