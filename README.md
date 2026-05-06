@@ -87,3 +87,43 @@ to decide whether this approach gives value to your project :-)
 #### Support
 
 For the time being, this package supports MySQL, PostgreSQL and SQLite databases. Support for other databases are encouraged to be added through pull requests.
+
+#### Custom Schema Mappers
+
+If your application uses a custom or third-party database connection class (for example a PgBouncer connection wrapper, a connection decorator from another package, or any driver not natively recognised by this package), you will see an error like:
+
+```
+There is no Schema Mapper registered for [Vendor\Package\CustomConnection] connection.
+```
+
+You can fix this by registering a custom mapper in `config/models.php`. Add a top-level `custom_mappers` key that maps the fully-qualified connection class name to the schema mapper that should handle it:
+
+```php
+// config/models.php
+
+return [
+
+    // ... existing '*' config ...
+
+    'custom_mappers' => [
+        // Map a PgBouncer connection wrapper to the built-in Postgres mapper
+        \Vermaysha\PgbouncerLaravelExtension\PostgresPGBouncerExtension::class
+            => \Reliese\Meta\Postgres\Schema::class,
+
+        // Any other custom connection → mapper pairs
+        // \YourVendor\YourPackage\CustomMySqlConnection::class
+        //     => \Reliese\Meta\MySql\Schema::class,
+    ],
+
+];
+```
+
+Built-in mapper classes you can reuse:
+
+| Mapper | Use for |
+|---|---|
+| `Reliese\Meta\MySql\Schema` | MySQL / MariaDB compatible connections |
+| `Reliese\Meta\Postgres\Schema` | PostgreSQL compatible connections |
+| `Reliese\Meta\Sqlite\Schema` | SQLite compatible connections |
+
+You can also implement your own mapper by implementing `Reliese\Meta\Schema` if you need custom introspection logic for an unsupported database driver.
