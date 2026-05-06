@@ -197,7 +197,7 @@ class Schema implements \Reliese\Meta\Schema
      */
     protected function fillRelations($sql, Blueprint $blueprint)
     {
-        $pattern = '/CONSTRAINT\s+(\w+)\s+FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mi';
+        $pattern = '/CONSTRAINT\s+(\S+)\s+FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mi';
         preg_match_all($pattern, $sql, $relations, PREG_SET_ORDER);
 
         foreach ($relations as $setup) {
