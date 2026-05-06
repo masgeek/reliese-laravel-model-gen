@@ -153,7 +153,6 @@ class Schema implements \Reliese\Meta\Schema
     /**
      * @param string $sql
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named primary keys
      */
     protected function fillPrimaryKey($sql, Blueprint $blueprint)
     {
@@ -164,7 +163,7 @@ class Schema implements \Reliese\Meta\Schema
 
         $key = [
             'name' => 'primary',
-            'index' => '',
+            'index' => 'PRIMARY',
             'columns' => $this->columnize($indexes[0][2]),
         ];
 
@@ -195,21 +194,20 @@ class Schema implements \Reliese\Meta\Schema
     /**
      * @param string $sql
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named foreign keys
      */
     protected function fillRelations($sql, Blueprint $blueprint)
     {
-        $pattern = '/FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mi';
+        $pattern = '/CONSTRAINT\s+(\w+)\s+FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mi';
         preg_match_all($pattern, $sql, $relations, PREG_SET_ORDER);
 
         foreach ($relations as $setup) {
-            $table = $this->resolveForeignTable($setup[2], $blueprint);
+            $table = $this->resolveForeignTable($setup[3], $blueprint);
 
             $relation = [
                 'name' => 'foreign',
-                'index' => '',
-                'columns' => $this->columnize($setup[1]),
-                'references' => $this->columnize($setup[3]),
+                'index' => $setup[1],
+                'columns' => $this->columnize($setup[2]),
+                'references' => $this->columnize($setup[4]),
                 'on' => $table,
             ];
 
