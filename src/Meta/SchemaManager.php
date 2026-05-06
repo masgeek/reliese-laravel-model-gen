@@ -113,8 +113,26 @@ class SchemaManager implements IteratorAggregate
             return static::$lookup[$type];
         }
 
+        // Collect every registered entry whose key class the connection is an instance of,
+        // then return the mapper for the most-derived key class. This ensures a custom mapper
+        // registered for App\TenantConnection wins over the built-in MySqlConnection entry
+        // even though both match via instanceof.
+        $matches = [];
         foreach (static::$lookup as $connectionClass => $mapper) {
             if ($this->connection instanceof $connectionClass) {
+                $matches[$connectionClass] = $mapper;
+            }
+        }
+
+        foreach ($matches as $candidateClass => $mapper) {
+            $hasMoreSpecificMatch = false;
+            foreach ($matches as $otherClass => $_) {
+                if ($candidateClass !== $otherClass && is_a($otherClass, $candidateClass, true)) {
+                    $hasMoreSpecificMatch = true;
+                    break;
+                }
+            }
+            if (! $hasMoreSpecificMatch) {
                 return $mapper;
             }
         }
