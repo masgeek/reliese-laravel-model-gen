@@ -27,9 +27,10 @@
     "illuminate/console": ">=5.1"
   },
   "require-dev": {
-    "fzaninotto/faker": "~1.4",
+    "fakerphp/faker": "^1.21",
     "mockery/mockery": ">=1.4",
-    "phpunit/phpunit": "^9"
+    "orchestra/testbench": "^8.0|^9.0|^10.0",
+    "phpunit/phpunit": "^10|^11"
   },
   "autoload": {
     "psr-4": {
