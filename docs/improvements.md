@@ -82,7 +82,11 @@ Tracks identified improvements, their status, and implementation notes.
 - [ ] **`match()` for mapper resolution**
   The static `$lookup` array + `instanceof` fallback in `SchemaManager` is a natural candidate for a `match()` expression once PHP 8.0 is the floor.
 
+- [x] **Dev dependency modernisation**
+  - `fzaninotto/faker` (archived) replaced with `fakerphp/faker ^1.21`
+  - `phpunit/phpunit` bumped from `^9` to `^10|^11`
+  - `orchestra/testbench ^8.0|^9.0|^10.0` added — provides a full Laravel application (including Eloquent) for package tests; covers Laravel 10, 11, and 12
+  - _Note: `illuminate/eloquent` is not a standalone Composer package — Eloquent ships inside `illuminate/database` which is already in `require`_
+
 - [ ] **Composer constraint tightening**
   - `doctrine/dbal` constraint (`>=2.5`) is too loose; pin to `^2.13|^3.0`
-  - `phpunit/phpunit` dev dependency is on `^9` (2020); upgrade to `^10` or `^11`
-  - `fzaninotto/faker` (`~1.4`, archived) should be replaced with `fakerphp/faker`
