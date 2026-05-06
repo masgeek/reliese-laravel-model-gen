@@ -163,16 +163,16 @@ class Schema implements \Reliese\Meta\Schema
 
     /**
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named primary keys
      */
     protected function fillPrimaryKey(Blueprint $blueprint)
     {
         $indexes = $this->manager()->listTableIndexes($blueprint->table());
+        $primary = $indexes['primary'] ?? null;
 
         $key = [
             'name' => 'primary',
-            'index' => '',
-            'columns' => optional($indexes['primary']??null)->getColumns()?:[],
+            'index' => $primary ? $primary->getName() : '',
+            'columns' => $primary ? $primary->getColumns() : [],
         ];
 
         $blueprint->withPrimaryKey(new Fluent($key));
@@ -199,18 +199,17 @@ class Schema implements \Reliese\Meta\Schema
 
     /**
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named foreign keys
      */
     protected function fillRelations(Blueprint $blueprint)
     {
         $relations = $this->manager()->listTableForeignKeys($blueprint->table());
 
         foreach ($relations as $setup) {
-            $table = ['database' => '', 'table'=>$setup->getForeignTableName()];
+            $table = ['database' => '', 'table' => $setup->getForeignTableName()];
 
             $relation = [
                 'name' => 'foreign',
-                'index' => '',
+                'index' => $setup->getName() ?? '',
                 'columns' => $setup->getColumns(),
                 'references' => $setup->getForeignColumns(),
                 'on' => $table,

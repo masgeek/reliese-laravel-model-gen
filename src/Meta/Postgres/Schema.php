@@ -218,20 +218,21 @@ class Schema implements \Reliese\Meta\Schema
     /**
      * @param array $relations
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named primary keys
      */
     protected function fillPrimaryKey($relations, Blueprint $blueprint)
     {
         $pk = [];
+        $pkName = '';
         foreach ($relations as $row) {
             if ($row['contype'] === 'p') {
                 $pk[] = $row['attname'];
+                $pkName = $row['conname'];
             }
         }
 
         $key = [
             'name' => 'primary',
-            'index' => '',
+            'index' => $pkName,
             'columns' => $pk,
         ];
 
@@ -262,7 +263,6 @@ class Schema implements \Reliese\Meta\Schema
     /**
      * @param array $relations
      * @param \Reliese\Meta\Blueprint $blueprint
-     * @todo: Support named foreign keys
      */
     protected function fillRelations($relations, Blueprint $blueprint)
     {
@@ -282,10 +282,10 @@ class Schema implements \Reliese\Meta\Schema
             }
         }
 
-        foreach ($fk as $row) {
+        foreach ($fk as $constraintName => $row) {
             $relation = [
                 'name' => 'foreign',
-                'index' => '',
+                'index' => $constraintName,
                 'columns' => $row['columns'],
                 'references' => $row['ref'],
                 'on' => [$this->schema, $row['table']],
