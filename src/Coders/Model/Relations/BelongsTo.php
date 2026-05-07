@@ -16,26 +16,26 @@ use Reliese\Coders\Model\Relation;
 class BelongsTo implements Relation
 {
     /**
-     * @var \Illuminate\Support\Fluent
+     * @var Fluent
      */
     protected $command;
 
     /**
-     * @var \Reliese\Coders\Model\Model
+     * @var Model
      */
     protected $parent;
 
     /**
-     * @var \Reliese\Coders\Model\Model
+     * @var Model
      */
     protected $related;
 
     /**
      * BelongsToWriter constructor.
      *
-     * @param \Illuminate\Support\Fluent $command
-     * @param \Reliese\Coders\Model\Model $parent
-     * @param \Reliese\Coders\Model\Model $related
+     * @param Fluent $command
+     * @param Model $parent
+     * @param Model $related
      */
     public function __construct(Fluent $command, Model $parent, Model $related)
     {
@@ -52,7 +52,7 @@ class BelongsTo implements Relation
         switch ($this->parent->getRelationNameStrategy()) {
             case 'foreign_key':
                 $relationName = RelationHelper::stripSuffixFromForeignKey(
-                    $this->parent->usesSnakeAttributes(),
+                    $this->parent->usesSnakeRelationNames(),
                     $this->otherKey(),
                     $this->foreignKey()
                 );
@@ -63,7 +63,7 @@ class BelongsTo implements Relation
                 break;
         }
 
-        if ($this->parent->usesSnakeAttributes()) {
+        if ($this->parent->usesSnakeRelationNames()) {
             return Str::snake($relationName);
         }
 
