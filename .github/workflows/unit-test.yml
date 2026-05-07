@@ -1,19 +1,19 @@
-name: CI
+name: UnitTests
 
 on:
   push:
-    branches:
-      - main
-      - develop
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main,develop ]
+  workflow_dispatch:
 
 jobs:
-  test:
+  unit-test:
     name: PHP ${{ matrix.php }} – ${{ matrix.dependency-version }}
     runs-on: ubuntu-24.04
+
+    concurrency:
+      group: unit-test-${{ github.ref }}-${{ matrix.php }}
+      cancel-in-progress: true
 
     strategy:
       fail-fast: false
