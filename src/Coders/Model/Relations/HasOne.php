@@ -24,7 +24,7 @@ class HasOne extends HasOneOrMany
      */
     public function name()
     {
-        if ($this->parent->usesSnakeAttributes()) {
+        if ($this->parent->usesSnakeRelationNames()) {
             return Str::snake($this->related->getClassName());
         }
 
