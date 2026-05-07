@@ -85,7 +85,7 @@ class BelongsToMany implements Relation
         if ($this->parent->shouldPluralizeTableName()) {
             $tableName = Str::plural(Str::singular($tableName));
         }
-        if ($this->parent->usesSnakeAttributes()) {
+        if ($this->parent->usesSnakeRelationNames()) {
             return Str::snake($tableName);
         }
 
