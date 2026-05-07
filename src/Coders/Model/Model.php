@@ -1045,6 +1045,24 @@ class Model
     }
 
     /**
+     * Whether relation method names should use snake_case.
+     *
+     * Defaults to the snake_attributes setting, but can be independently
+     * overridden to false via camel_case_relations so you can keep
+     * snake_case column properties while generating camelCase relation methods.
+     *
+     * @return bool
+     */
+    public function usesSnakeRelationNames()
+    {
+        if ($this->config('camel_case_relations', false)) {
+            return false;
+        }
+
+        return $this->usesSnakeAttributes();
+    }
+
+    /**
      * @return bool
      */
     public function hasHints()
