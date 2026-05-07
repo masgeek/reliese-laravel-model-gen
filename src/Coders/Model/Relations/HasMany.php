@@ -28,7 +28,7 @@ class HasMany extends HasOneOrMany
         switch ($this->parent->getRelationNameStrategy()) {
             case 'foreign_key':
                 $relationName = RelationHelper::stripSuffixFromForeignKey(
-                    $this->parent->usesSnakeAttributes(),
+                    $this->parent->usesSnakeRelationNames(),
                     $this->localKey(),
                     $this->foreignKey()
                 );
@@ -44,7 +44,7 @@ class HasMany extends HasOneOrMany
                 break;
         }
 
-        if ($this->parent->usesSnakeAttributes()) {
+        if ($this->parent->usesSnakeRelationNames()) {
             return Str::snake($relationName);
         }
 

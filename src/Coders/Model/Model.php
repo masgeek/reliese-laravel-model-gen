@@ -359,6 +359,7 @@ class Model
             case 'collection':
                 $type = '\Illuminate\Support\Collection';
                 break;
+            case 'date':
             case 'datetime':
                 $type = '\Carbon\Carbon';
                 break;
@@ -1042,6 +1043,24 @@ class Model
     public function doesNotUseSnakeAttributes()
     {
         return !$this->usesSnakeAttributes();
+    }
+
+    /**
+     * Whether relation method names should use snake_case.
+     *
+     * Defaults to the snake_attributes setting, but can be independently
+     * overridden to false via camel_case_relations so you can keep
+     * snake_case column properties while generating camelCase relation methods.
+     *
+     * @return bool
+     */
+    public function usesSnakeRelationNames()
+    {
+        if ($this->config('camel_case_relations', false)) {
+            return false;
+        }
+
+        return $this->usesSnakeAttributes();
     }
 
     /**

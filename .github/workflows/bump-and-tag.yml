@@ -1,9 +1,8 @@
 name: BumpVersion
-
 on:
   push:
     branches:
-      - main
+      - 'main'
   workflow_dispatch:
 
 jobs:
@@ -14,8 +13,6 @@ jobs:
     concurrency:
       cancel-in-progress: true
       group: bump-version-${{ github.ref }}
-    outputs:
-      new_tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v4
       - name: Generate Tag
@@ -27,13 +24,13 @@ jobs:
           create_annotated_tag: true
 
       - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.16.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          name: Version ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
           makeLatest: true
           allowUpdates: true
           generateReleaseNotes: true
-          skipIfReleaseExists: true
+          skipIfReleaseExists: false

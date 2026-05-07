@@ -1,11 +1,15 @@
-name: Create next release
+name: NextRelease
 on:
+  merge_group:
   push:
     branches:
-      - develop
+      - 'develop'
 jobs:
-  action-pull-request:
+  next-release-pr:
     runs-on: ubuntu-24.04
+    concurrency:
+      cancel-in-progress: true
+      group: release-${{ github.ref }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,8 +24,6 @@ jobs:
           reviewer: ${{ github.actor }}
           assignee: ${{ github.actor }}
           target_branch: main
-          label: release
-          old_string: "**Write you description here**"
-          body: "${{ github.event.head_commit.message }}"
-          new_string: "${{ github.event.head_commit.message }}"
-          get_diff: false
+          label: automatic,release
+          new_string: ${{ github.event.commits[0].message }}
+          get_diff: true

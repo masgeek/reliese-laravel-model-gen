@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Fluent;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Reliese\Coders\Model\Factory;
 use Reliese\Coders\Model\Model;
 use Reliese\Coders\Model\Relations\BelongsTo;
@@ -8,7 +9,7 @@ use Reliese\Meta\Blueprint;
 
 class ModelTest extends TestCase
 {
-    public function dataForTestPhpTypeHint()
+    public static function dataForTestPhpTypeHint()
     {
         return [
             'Non-nullable int' => [
@@ -44,13 +45,7 @@ class ModelTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider dataForTestPhpTypeHint
-     *
-     * @param string $castType
-     * @param bool $nullable
-     * @param string $expect
-     */
+    #[DataProvider('dataForTestPhpTypeHint')]
     public function testPhpTypeHint($castType, $nullable, $expect)
     {
         $model = new Model(
@@ -59,7 +54,7 @@ class ModelTest extends TestCase
                 \Mockery::mock(\Illuminate\Database\DatabaseManager::class),
                 \Mockery::mock(Illuminate\Filesystem\Filesystem::class),
                 \Mockery::mock(\Reliese\Support\Classify::class),
-                new \Reliese\Coders\Model\Config()
+                new \Reliese\Coders\Model\Config(['*' => ['parent' => \Illuminate\Database\Eloquent\Model::class]])
             )
         );
 
@@ -67,11 +62,7 @@ class ModelTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
-    /**
-     * @dataProvider provideDataForTestNullableRelationships
-     * @param bool $nullable
-     * @param string $expectedTypehint
-     */
+    #[DataProvider('provideDataForTestNullableRelationships')]
     public function testBelongsToNullableRelationships($nullable, $expectedTypehint)
     {
         $columnDefinition = new Fluent(
@@ -89,6 +80,7 @@ class ModelTest extends TestCase
         $baseBlueprint->shouldReceive('relations')->andReturn([]);
         $baseBlueprint->shouldReceive('table')->andReturn('things');
         $baseBlueprint->shouldReceive('column')->andReturn($columnDefinition);
+        $baseBlueprint->shouldReceive('isView')->andReturn(false);
 
         $model = new Model(
             $baseBlueprint,
@@ -96,7 +88,7 @@ class ModelTest extends TestCase
                 \Mockery::mock(\Illuminate\Database\DatabaseManager::class),
                 \Mockery::mock(Illuminate\Filesystem\Filesystem::class),
                 \Mockery::mock(\Reliese\Support\Classify::class),
-                new \Reliese\Coders\Model\Config()
+                new \Reliese\Coders\Model\Config(['*' => ['parent' => \Illuminate\Database\Eloquent\Model::class]])
             )
         );
 
@@ -113,7 +105,7 @@ class ModelTest extends TestCase
         $this->assertSame($expectedTypehint, $relation->hint());
     }
 
-    public function provideDataForTestNullableRelationships()
+    public static function provideDataForTestNullableRelationships()
     {
         return [
             'Nullable Relation' => [
