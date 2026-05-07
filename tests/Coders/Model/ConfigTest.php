@@ -1,18 +1,13 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Reliese\Coders\Model\Config;
 use Reliese\Meta\Blueprint;
 
 class ConfigTest extends TestCase
 {
-    /**
-     * @dataProvider provideDataForTestGet
-     *
-     * @param array $config
-     * @param string $key
-     * @param string|array|bool|int|float $expected
-     */
+    #[DataProvider('provideDataForTestGet')]
     public function testGet($config, $key, $expected)
     {
         $config = new Config($config);
@@ -26,7 +21,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($expected, $config->get($baseBlueprint, $key));
     }
 
-    public function provideDataForTestGet()
+    public static function provideDataForTestGet()
     {
         return [
             'Basic Key' => [

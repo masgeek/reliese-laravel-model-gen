@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Fluent;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Reliese\Coders\Model\Model;
 use Reliese\Coders\Model\Relations\BelongsTo;
@@ -8,7 +9,7 @@ use Reliese\Coders\Model\Relations\HasMany;
 
 class HasManyTest extends TestCase
 {
-    public function provideForeignKeyStrategyPermutations()
+    public static function provideForeignKeyStrategyPermutations()
     {
         // usesSnakeAttributes, subjectName, relationName, primaryKey, foreignKey, expected
         return [
@@ -33,16 +34,7 @@ class HasManyTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideForeignKeyStrategyPermutations
-     *
-     * @param bool $usesSnakeAttributes
-     * @param string $subjectName
-     * @param string $relationName
-     * @param string $primaryKey
-     * @param string $foreignKey
-     * @param string $expected
-     */
+    #[DataProvider('provideForeignKeyStrategyPermutations')]
     public function testNameUsingForeignKeyStrategy($usesSnakeAttributes, $subjectName, $relationName, $primaryKey, $foreignKey, $expected)
     {
         $relation = Mockery::mock(Fluent::class)->makePartial();
@@ -52,7 +44,7 @@ class HasManyTest extends TestCase
 
         $subject = Mockery::mock(Model::class)->makePartial();
         $subject->shouldReceive('getRelationNameStrategy')->andReturn('foreign_key');
-        $subject->shouldReceive('usesSnakeAttributes')->andReturn($usesSnakeAttributes);
+        $subject->shouldReceive('usesSnakeRelationNames')->andReturn($usesSnakeAttributes);
         $subject->shouldReceive('getClassName')->andReturn($subjectName);
 
         /** @var BelongsTo|\Mockery\Mock $relationship */
@@ -68,7 +60,7 @@ class HasManyTest extends TestCase
         );
     }
 
-    public function provideRelatedStrategyPermutations()
+    public static function provideRelatedStrategyPermutations()
     {
         // usesSnakeAttributes, subjectName, relatedName, expected
         return [
@@ -79,14 +71,7 @@ class HasManyTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideRelatedStrategyPermutations
-     *
-     * @param bool $usesSnakeAttributes
-     * @param string $subjectName
-     * @param string $relationName
-     * @param string $expected
-     */
+    #[DataProvider('provideRelatedStrategyPermutations')]
     public function testNameUsingRelatedStrategy($usesSnakeAttributes, $subjectName, $relationName, $expected)
     {
         $relation = Mockery::mock(Fluent::class)->makePartial();
@@ -97,7 +82,7 @@ class HasManyTest extends TestCase
         $subject = Mockery::mock(Model::class)->makePartial();
         $subject->shouldReceive('getClassName')->andReturn($subjectName);
         $subject->shouldReceive('getRelationNameStrategy')->andReturn('related');
-        $subject->shouldReceive('usesSnakeAttributes')->andReturn($usesSnakeAttributes);
+        $subject->shouldReceive('usesSnakeRelationNames')->andReturn($usesSnakeAttributes);
 
         /** @var BelongsTo|\Mockery\Mock $relationship */
         $relationship = Mockery::mock(HasMany::class, [$relation, $subject, $relatedModel])->makePartial();

@@ -1,11 +1,12 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Reliese\Coders\Model\Relations\RelationHelper;
 
 class RelationHelperTest extends TestCase
 {
-    public function provideKeys()
+    public static function provideKeys()
     {
         // usesSnakeAttributes, primaryKey, foreignKey, expected
         return [
@@ -24,14 +25,7 @@ class RelationHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideKeys
-     *
-     * @param bool $usesSnakeAttributes
-     * @param string $primaryKey
-     * @param string $foreignKey
-     * @param string $expected
-     */
+    #[DataProvider('provideKeys')]
     public function testNameUsingForeignKeyStrategy($usesSnakeAttributes, $primaryKey, $foreignKey, $expected)
     {
         $this->assertEquals(
