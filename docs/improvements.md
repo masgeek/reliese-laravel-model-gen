@@ -24,6 +24,23 @@ Tracks identified improvements, their status, and implementation notes.
 
 ---
 
+## Relation Method Style
+
+- [x] **CamelCase relation method names independent of `snake_attributes`**
+  Added `camel_case_relations` config option. Previously relation naming was tied exclusively to `snake_attributes`, making it impossible to keep snake_case column properties while generating camelCase relation methods. When `camel_case_relations: true`, all relation method names use camelCase regardless of `snake_attributes`. Affects `HasOne`, `HasMany`, `BelongsTo`, and `BelongsToMany` via the new `Model::usesSnakeRelationNames()` method.
+  _Implemented in `src/Coders/Model/Model.php` and all four relation classes_
+
+- [x] **Return type declarations on relation methods**
+  `enable_return_types` already existed but was undocumented in context. Setting it to `true` generates `: HasMany`, `: BelongsTo`, etc. on all relation methods.
+
+  **Full example config for `apiKeys(): HasMany` style:**
+  ```php
+  'camel_case_relations' => true,
+  'enable_return_types'  => true,
+  ```
+
+---
+
 ## Artisan Command
 
 - [ ] **#3 — Multi-connection single run**
