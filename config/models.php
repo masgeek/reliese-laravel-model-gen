@@ -87,7 +87,7 @@ return [
         |
         */
         'view_parent' => null,
-        
+
         /*
         |--------------------------------------------------------------------------
         | Traits
@@ -218,6 +218,26 @@ return [
         */
 
         'snake_attributes' => true,
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CamelCase Relation Method Names
+        |--------------------------------------------------------------------------
+        | By default, relation method names follow the snake_attributes setting.
+        | When snake_attributes is true (the default), relations are generated as
+        | snake_case: api_keys(), belongs_to_user(), etc.
+        |
+        | Set camel_case_relations to true to always generate camelCase relation
+        | method names regardless of snake_attributes. This lets you keep
+        | snake_case column properties while using camelCase for relations:
+        |
+        |   // snake_attributes: true, camel_case_relations: true
+        |   public function apiKeys(): HasMany { ... }   ← camelCase method
+        |   public $api_key_id;                          ← snake_case property
+        |
+        */
+        'camel_case_relations' => false,
 
         /*
         |--------------------------------------------------------------------------
@@ -498,25 +518,6 @@ return [
         |
         */
         'enable_return_types' => false,
-
-        /*
-        |--------------------------------------------------------------------------
-        | CamelCase Relation Method Names
-        |--------------------------------------------------------------------------
-        | By default, relation method names follow the snake_attributes setting.
-        | When snake_attributes is true (the default), relations are generated as
-        | snake_case: api_keys(), belongs_to_user(), etc.
-        |
-        | Set camel_case_relations to true to always generate camelCase relation
-        | method names regardless of snake_attributes. This lets you keep
-        | snake_case column properties while using camelCase for relations:
-        |
-        |   // snake_attributes: true, camel_case_relations: true
-        |   public function apiKeys(): HasMany { ... }   ← camelCase method
-        |   public $api_key_id;                          ← snake_case property
-        |
-        */
-        'camel_case_relations' => false,
     ],
 
     /*
