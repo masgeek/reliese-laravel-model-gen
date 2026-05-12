@@ -348,24 +348,28 @@ class Model
     {
         $type = $castType;
 
-        switch ($castType) {
-            case 'object':
-                $type = '\stdClass';
-                break;
-            case 'array':
-            case 'json':
-                $type = 'array';
-                break;
-            case 'collection':
-                $type = '\Illuminate\Support\Collection';
-                break;
-            case 'date':
-            case 'datetime':
-                $type = '\Carbon\Carbon';
-                break;
-            case 'binary':
-                $type = 'string';
-                break;
+        if ($this->isFqcnCast($castType)) {
+            $type = '\\' . ltrim($castType, '\\');
+        } else {
+            switch ($castType) {
+                case 'object':
+                    $type = '\stdClass';
+                    break;
+                case 'array':
+                case 'json':
+                    $type = 'array';
+                    break;
+                case 'collection':
+                    $type = '\Illuminate\Support\Collection';
+                    break;
+                case 'date':
+                case 'datetime':
+                    $type = '\Carbon\Carbon';
+                    break;
+                case 'binary':
+                    $type = 'string';
+                    break;
+            }
         }
 
         if ($nullable) {
@@ -1005,7 +1009,21 @@ class Model
             unset($this->casts[$this->getPrimaryKey()]);
         }
 
-        return $this->casts;
+        return array_map(function ($cast) {
+            if ($this->isFqcnCast($cast)) {
+                return '\\' . ltrim($cast, '\\') . '::class';
+            }
+            return $cast;
+        }, $this->casts);
+    }
+
+    /**
+     * Returns true when a cast value is a fully-qualified class name.
+     * Any cast containing a backslash is treated as a FQCN rather than a primitive cast type.
+     */
+    protected function isFqcnCast($cast): bool
+    {
+        return is_string($cast) && strpos($cast, '\\') !== false;
     }
 
     /**
