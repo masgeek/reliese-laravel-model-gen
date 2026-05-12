@@ -58,11 +58,32 @@ php artisan code:models --table=users
 php artisan code:models --connection=mysql
 ```
 
-- If you are using a MySQL database, you can specify which schema you want to scaffold:
+- If you are using a MySQL database, you can specify which database schema you want to scaffold:
 
 ```shell
 php artisan code:models --schema=shop
 ```
+
+- If you are using a PostgreSQL database, you can specify which schema namespace to introspect (defaults to `public`):
+
+```shell
+php artisan code:models --pg-schema=myschema
+```
+
+You can also set the default PostgreSQL schema via your `.env` file instead of passing it every time:
+
+```dotenv
+DB_SCHEMA=myschema
+```
+
+Or publish the config and set it there:
+
+```php
+// config/models.php
+'pg_schema' => env('DB_SCHEMA', null),
+```
+
+The resolution order is: `--pg-schema` option → `DB_SCHEMA` env variable → `database.connections.{connection}.schema` → `public`.
 
 ### Customizing Model Scaffolding
 

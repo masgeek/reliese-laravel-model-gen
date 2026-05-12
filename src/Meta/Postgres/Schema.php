@@ -47,10 +47,9 @@ class Schema implements \Reliese\Meta\Schema
      */
     public function __construct($schema, $connection)
     {
-        $this->schema_database = Config::get("database.connections.pgsql.schema");
-        if (!$this->schema_database){
-            $this->schema_database = 'public';
-        }
+        $connectionName = $connection->getName();
+        $this->schema_database = Config::get('models.pg_schema')
+            ?? Config::get("database.connections.$connectionName.schema", 'public');
         $this->schema = $schema;
         $this->connection = $connection;
 

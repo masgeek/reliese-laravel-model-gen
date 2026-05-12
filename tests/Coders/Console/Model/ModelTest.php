@@ -42,6 +42,21 @@ class ModelTest extends TestCase
                 'nullable' => true,
                 'expect' => '\Carbon\Carbon|null',
             ],
+            'Non-nullable FQCN class cast' => [
+                'castType' => 'AngelSourceLabs\LaravelSpatial\Types\Geometry',
+                'nullable' => false,
+                'expect' => '\AngelSourceLabs\LaravelSpatial\Types\Geometry',
+            ],
+            'Nullable FQCN class cast' => [
+                'castType' => 'AngelSourceLabs\LaravelSpatial\Types\Geometry',
+                'nullable' => true,
+                'expect' => '\AngelSourceLabs\LaravelSpatial\Types\Geometry|null',
+            ],
+            'FQCN class cast with leading backslash' => [
+                'castType' => '\AngelSourceLabs\LaravelSpatial\Types\Geometry',
+                'nullable' => false,
+                'expect' => '\AngelSourceLabs\LaravelSpatial\Types\Geometry',
+            ],
         ];
     }
 
