@@ -4,6 +4,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | PostgreSQL Schema Namespace
+    |--------------------------------------------------------------------------
+    |
+    | For PostgreSQL connections, this controls which schema namespace is
+    | introspected when generating models. Set DB_SCHEMA in your .env file
+    | to override the default. Falls back to the schema set in
+    | database.connections.{connection}.schema, then to "public".
+    |
+    | Can also be overridden at runtime with the --pg-schema Artisan option.
+    |
+    */
+
+    'pg_schema' => env('DB_SCHEMA', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Configurations
     |--------------------------------------------------------------------------
     |
