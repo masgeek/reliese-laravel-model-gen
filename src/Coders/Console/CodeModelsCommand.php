@@ -18,6 +18,7 @@ class CodeModelsCommand extends Command
                             {--c|connection= : The name of the connection}
                             {--t|table= : The name of a specific table to generate}
                             {--view= : The name of a specific view to generate}
+                            {--pg-schema= : The PostgreSQL schema namespace to introspect (default: connection config schema or "public")}
                             {--dry-run : List what would be generated without writing any files}';
 
     /**
@@ -61,6 +62,10 @@ class CodeModelsCommand extends Command
         $table = $this->getTable();
         $view = $this->getView();
         $dryRun = (bool) $this->option('dry-run');
+
+        if ($pgSchema = $this->option('pg-schema')) {
+            $this->config->set('models.pg_schema', $pgSchema);
+        }
 
         $factory = $this->models
             ->on($connection)
