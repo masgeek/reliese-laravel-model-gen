@@ -159,7 +159,12 @@ class Factory
 
         $mapper = $this->makeSchema($schema);
 
-        foreach ($mapper->tables() as $blueprint) {
+        $tables = $mapper->tables();
+        usort($tables, function ($a, $b) {
+            return strcmp($a->table(), $b->table());
+        });
+
+        foreach ($tables as $blueprint) {
             if ($blueprint->isView() && ! $this->config($blueprint, 'with_views', false)) {
                 continue;
             }
@@ -420,7 +425,10 @@ class Factory
         // Process property annotations
         $annotations = '';
 
-        foreach ($model->getProperties() as $name => $hint) {
+        $properties = $model->getProperties();
+        ksort($properties);
+
+        foreach ($properties as $name => $hint) {
             $annotations .= $this->class->annotation('property', "$hint \$$name");
         }
 
@@ -429,7 +437,10 @@ class Factory
             $annotations .= "\n * ";
         }
 
-        foreach ($model->getRelations() as $name => $relation) {
+        $relations = $model->getRelations();
+        ksort($relations);
+
+        foreach ($relations as $name => $relation) {
             // TODO: Handle collisions, perhaps rename the relation.
             if ($model->hasProperty($name)) {
                 continue;
@@ -473,6 +484,7 @@ class Factory
         if ($model->usesPropertyConstants()) {
             // Take all properties and exclude already added constants with timestamps.
             $properties = array_keys($model->getProperties());
+            sort($properties);
             $properties = array_diff($properties, $excludedConstants);
 
             foreach ($properties as $property) {
@@ -548,11 +560,19 @@ class Factory
             $body .= $this->class->field('hints', $model->getHints(), ['before' => "\n"]);
         }
 
-        foreach ($model->getMutations() as $mutation) {
+        $mutations = $model->getMutations();
+        usort($mutations, function ($a, $b) {
+            return strcmp($a->name(), $b->name());
+        });
+
+        foreach ($mutations as $mutation) {
             $body .= $this->class->method($mutation->name(), $mutation->body(), ['before' => "\n"]);
         }
 
-        foreach ($model->getRelations() as $constraint) {
+        $relations = $model->getRelations();
+        ksort($relations);
+
+        foreach ($relations as $constraint) {
             $body .= $this->class->method(
                 $constraint->name(),
                 $constraint->body(),
