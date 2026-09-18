@@ -99,7 +99,17 @@ class BelongsTo implements Relation
             // We will assume that when this happens the referenced columns are a composite primary key
             // or a composite unique key. Otherwise it should be a has-many relationship which is not
             // supported at the moment. @todo: Improve relationship resolution.
+            $seen = [];
             foreach ($this->command->references as $index => $column) {
+                $pair = $this->qualifiedOtherKey($index)."\0".$this->qualifiedForeignKey($index);
+
+                // A single FK constraint can be reported more than once for the
+                // same column pair; only emit one where() per distinct pair.
+                if (in_array($pair, $seen, true)) {
+                    continue;
+                }
+                $seen[] = $pair;
+
                 $body .= "\n\t\t\t\t\t->where(".
                     Dumper::export($this->qualifiedOtherKey($index)).
                     ", '=', ".
