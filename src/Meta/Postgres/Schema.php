@@ -181,6 +181,7 @@ class Schema implements \Reliese\Meta\Schema
             parent.attname as parent_attname
         FROM pg_attribute child
             JOIN pg_class child_class ON child_class.oid = child.attrelid
+            JOIN pg_namespace ns ON ns.oid = child_class.relnamespace
             LEFT JOIN pg_constraint p ON p.conrelid = child_class.oid
                 AND child.attnum = ANY (p.conkey)
             LEFT JOIN pg_attribute parent on parent.attnum = ANY (p.confkey)
@@ -188,6 +189,7 @@ class Schema implements \Reliese\Meta\Schema
             LEFT JOIN pg_class parent_class on parent_class.oid = p.confrelid
         WHERE child_class.relkind = \'r\'::char
             AND child_class.relname = \''.$blueprint->table().'\'
+            AND ns.nspname = \''.$this->schema_database.'\'
             AND child.attnum > 0
             AND contype IS NOT NULL
         ORDER BY child.attnum
@@ -197,7 +199,8 @@ class Schema implements \Reliese\Meta\Schema
         $this->fillPrimaryKey($relations, $blueprint);
         $this->fillRelations($relations, $blueprint);
 
-        $sql = 'SELECT * FROM pg_indexes WHERE tablename = \''.$blueprint->table().'\';';
+        $sql = "SELECT * FROM pg_indexes WHERE tablename = '".$blueprint->table()."'".
+            " AND schemaname = '".$this->schema_database."'";
         $indexes = $this->arraify($this->connection->select($sql));
         $this->fillIndexes($indexes, $blueprint);
     }
@@ -268,17 +271,34 @@ class Schema implements \Reliese\Meta\Schema
         $fk = [];
         foreach ($relations as $row) {
             $relName = $row['conname'];
-            if ($row['contype'] === 'f') {
-                if (! array_key_exists($relName, $fk)) {
-                    $fk[$relName] = [
-                        'columns' =>  [],
-                        'ref' => [],
-                    ];
-                }
-                $fk[$relName]['columns'][] = $row['attname'];
-                $fk[$relName]['ref'][] = $row['parent_attname'];
-                $fk[$relName]['table'] = $row['parent_table'];
+            if ($row['contype'] !== 'f') {
+                continue;
             }
+
+            if (! array_key_exists($relName, $fk)) {
+                $fk[$relName] = [
+                    'columns' => [],
+                    'ref' => [],
+                    'seen' => [],
+                ];
+            }
+
+            $column = $row['attname'];
+            $reference = $row['parent_attname'];
+            $pair = $column."\0".$reference;
+
+            // A single FK constraint can be reported multiple times for the same
+            // column pair (e.g. when a table exists under several schemas). Only
+            // record each distinct (column, referenced column) pair once so that
+            // single-column FKs do not get inflated into composite keys.
+            if (in_array($pair, $fk[$relName]['seen'], true)) {
+                continue;
+            }
+
+            $fk[$relName]['seen'][] = $pair;
+            $fk[$relName]['columns'][] = $column;
+            $fk[$relName]['ref'][] = $reference;
+            $fk[$relName]['table'] = $row['parent_table'];
         }
 
         foreach ($fk as $constraintName => $row) {
