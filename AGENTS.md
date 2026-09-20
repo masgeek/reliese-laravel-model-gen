@@ -10,7 +10,7 @@ A Laravel package (`masgeek/reliese-laravel-model-gen`) that reverse-engineers E
 - `vendor/bin/phpunit --no-coverage` — run the full suite. Always pass `--no-coverage`; coverage needs xdebug/pcov, which is not set up.
 - No linter/static-analysis/formatter is configured. Don't invent one (no phpstan, pint, php-cs-fixer, etc.).
 
-Tests are pure unit tests using Mockery — no live DB, no services. 89 tests, run in <1s.
+Tests are pure unit tests using Mockery — no live DB, no services. 107 tests, run in <1s.
 
 ## Architecture
 
@@ -25,4 +25,4 @@ Tests are pure unit tests using Mockery — no live DB, no services. 89 tests, r
 - `composer.lock` is gitignored (present locally for reproducibility, but never committed).
 - The `code:models` command supports `--schema`, `--connection`, `--table`, `--view`, `--pg-schema`, and `--dry-run`. `--pg-schema` resolution order: option -> `DB_SCHEMA` env -> connection config -> `public`.
 - `config/models.php` is the single source of generation behavior; `docs/improvements.md` and `ENHANCEMENTS.md` track implemented/planned improvements — check them before adding a feature that may already exist.
-- Default integration branch is `develop`; PRs into it auto-approve after CI (GitHub app token via `CLIENT_ID`/`APP_PRIVATE_KEY`). CI runs on PHP 8.1 and 8.4 with `prefer-stable` deps.
+- Default integration branch is `develop`. CI (`UnitTests` workflow) runs `vendor/bin/phpunit --no-coverage` on PHP 8.3/8.4/8.5 (`prefer-stable`). After a green run, `pr-automation` auto-approves the PR using a GitHub App token (`vars.CLIENT_ID` + `secrets.APP_PRIVATE_KEY`). Pushing to `develop` auto-opens a "Next release" PR to `main`; pushing to `main` bumps the `v*` tag and drafts a GitHub release (`bump-and-tag` workflow).
