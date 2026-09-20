@@ -20,6 +20,7 @@ Prioritized roadmap for `masgeek/reliese-laravel-model-gen`.
 | P1 | High | 1–2w | `HasManyThrough` / `HasOneThrough` detection (3-table chains) | Relations | Open (`ENHANCEMENTS.md`) |
 | P1 | Medium | 1–3d | PHP 8.1 backed-enum casts on `ENUM` columns | Codegen | Open (`ENHANCEMENTS.md`) |
 | P1 | Medium | <1d | Configurable nullable style (`string|null` vs `?string`) | Codegen | Open (`ENHANCEMENTS.md`) |
+| P1 | High | 1–3d | Per-model `casts` overrides — merge table/schema/connection-level `casts` on top of the global ones (first-match-wins → layered) | Codegen | ✅ Done — `Config::get()` now merges `casts` across the resolution tree |
 | P1 | Medium | 1–3d | Clarify Postgres `Schema::schemas()` — it enumerates **databases** (`pg_database`), not namespaces; align with `--pg-schema` semantics | Introspection | 🙏 New — surprising behavior worth a decision (document vs fix) |
 | P1 | Low | 1–3d | Tests for `SchemaManager::register()/getMapper()` fallback + `custom_mappers` wiring | Tests | Open (`docs/improvements.md` #6) |
 | P2 | High | >2w | Migrate MySQL/Postgres introspection from raw SQL / `SHOW CREATE TABLE` regex to Doctrine DBAL (parity with SQLite) | Introspection | Deferred (`docs/improvements.md`) |
