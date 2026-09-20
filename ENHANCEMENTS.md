@@ -65,6 +65,21 @@ Check off each item as it is implemented and merged.
 
 ## Code Generation Quality
 
+- [x] **Per-model `casts` overrides**
+  `casts` patterns used to be first-match-wins across the whole config tree, so a
+  per-model block replaced the global one entirely. `Config::get()` now merges
+  `casts` across every resolution level (connection → schema → table → global),
+  with more specific patterns checked first and winning on collisions. This lets
+  a blanket rule like `'password' => 'hashed'` be narrowed per model, e.g. only
+  `'api_keys' => ['casts' => ['password' => 'encrypted']]`.
+  _File:_ `src/Coders/Model/Config.php`
+
+- [x] **Config-driven generation order**
+  `Factory::map()` used to always sort tables alphabetically. A new `table_order`
+  config key supports `'alphabetical'` (default), `'database'` (natural DB order)
+  or an explicit array of table names (unlisted tables follow alphabetically).
+  _File:_ `src/Coders/Model/Factory.php`
+
 - [ ] **`strict_types` config option**
   Add a `'strict_types' => false` config key. When `true`, prepend
   `declare(strict_types=1);` to every generated file.
@@ -110,5 +125,7 @@ Check off each item as it is implemented and merged.
 | 8 | Views | View-specific parent class config | [x] |
 | 9 | Codegen | `strict_types` config option | [ ] |
 | 10 | Codegen | PHP 8.1 enum casts | [ ] |
-| 11 | Codegen | Nullable type-hint style config | [ ] |
-| 12 | Relations | `HasManyThrough` / `HasOneThrough` | [ ] |
+| 11 | Codegen | Per-model `casts` overrides (merged, not replaced) | [x] |
+| 12 | Codegen | Config-driven generation order (`table_order`) | [x] |
+| 13 | Codegen | Nullable type-hint style config | [ ] |
+| 14 | Relations | `HasManyThrough` / `HasOneThrough` | [ ] |
