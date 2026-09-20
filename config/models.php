@@ -331,11 +331,59 @@ return [
         | assigned. We have defined some fields for you. Feel free to
         | modify them to fit your needs.
         |
+        | Patterns defined here apply to every generated model. If a specific
+        | model needs its own casting, define a per-model 'casts' block (see
+        | the Per-Model Casts section below). Per-model patterns win over these
+        | global ones and are merged on top of them.
+        |
         */
 
         'casts' => [
             '*_json' => 'json',
+            'api_password' => 'encrypted',
+            'is_active' => 'boolean',
+            'is_default' => 'boolean',
+            'payload' => 'json',
+
+            'password' => 'hashed',
+            'token' => 'encrypted',
+            'api_key' => 'encrypted',
+            'parameters' => 'encrypted:array',
+            'result' => 'encrypted:array',
+            'records' => 'encrypted:array',
+            'lease_expires_at' => 'immutable_datetime',
+            'started_at' => 'immutable_datetime',
+            'completed_at' => 'immutable_datetime',
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Per-Model Casts
+        |--------------------------------------------------------------------------
+        |
+        | Not every column with the same name needs the same cast. To cast a
+        | column differently for a single model, add a 'casts' key inside that
+        | table's own configuration block. Table-level patterns are merged on
+        | top of the global 'casts' above, so the global patterns still apply
+        | to every other column of the model and only the ones you list here
+        | are overridden.
+        |
+        | Example: keep 'password' as 'hashed' for most models but make it
+        | 'encrypted' only on the 'api_keys' model:
+        |
+        | 'api_keys' => [
+        |     'casts' => [
+        |         'password' => 'encrypted',
+        |         'records' => 'encrypted:array',
+        |         'lease_expires_at' => 'immutable_datetime',
+        |     ],
+        | ],
+        |
+        | Any key from the resolution tree works the same way (connection,
+        | schema, table), from most specific to least specific. Patterns listed
+        | in a more specific block win over the same pattern in the global one.
+        |
+        */
 
         /*
         |--------------------------------------------------------------------------
@@ -370,6 +418,27 @@ return [
         'only' => [
             // 'users',
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Table Generation Order
+        |--------------------------------------------------------------------------
+        |
+        | Models are generated in alphabetical order by default. If your schema
+        | needs a specific writing order, set "table_order" to one of:
+        |
+        | - "alphabetical" (default): tables are sorted by name.
+        | - "database": tables keep the order returned by the database.
+        | - an array of table names for full control, e.g.
+        |
+        |       'table_order' => ['users', 'teams', 'memberships'],
+        |
+        |   Tables not listed are generated after the listed ones, in
+        |   alphabetical order.
+        |
+        */
+
+        'table_order' => 'alphabetical',
 
         /*
         |--------------------------------------------------------------------------
