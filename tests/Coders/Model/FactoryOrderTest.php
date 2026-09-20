@@ -13,6 +13,11 @@ class OrderableFactory extends Factory
     {
         return $this->orderTables($tables, $order);
     }
+
+    public function orderFor(array $tables): Config|array|string
+    {
+        return $this->resolveTableOrder($tables);
+    }
 }
 
 class FactoryOrderTest extends TestCase
@@ -92,5 +97,23 @@ class FactoryOrderTest extends TestCase
         );
 
         $this->assertSame(['users', 'logs', 'alpha', 'zeta'], $this->tableNames($ordered));
+    }
+
+    public function testTableOrderIsResolvedFromNameKeyedTablesWithoutError(): void
+    {
+        $factory = $this->makeFactory();
+
+        // Schema mappers return tables keyed by name, not zero-indexed.
+        $tables = $this->blueprints(['zeta', 'alpha']);
+
+        $this->assertSame('alphabetical', $factory->orderFor([
+            'zeta' => $tables[0],
+            'alpha' => $tables[1],
+        ]));
+    }
+
+    public function testTableOrderDefaultsToAlphabeticalForEmptyTables(): void
+    {
+        $this->assertSame('alphabetical', $this->makeFactory()->orderFor([]));
     }
 }
