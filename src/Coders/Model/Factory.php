@@ -160,7 +160,7 @@ class Factory
         $mapper = $this->makeSchema($schema);
 
         $tables = $mapper->tables();
-        $order = ! empty($tables) ? $this->config($tables[0], 'table_order', 'alphabetical') : 'alphabetical';
+        $order = $this->resolveTableOrder($tables);
         $tables = $this->orderTables($tables, $order);
 
         foreach ($tables as $blueprint) {
@@ -171,6 +171,27 @@ class Factory
                 $this->create($mapper->schema(), $blueprint->table());
             }
         }
+    }
+
+    /**
+     * Resolve the "table_order" config. Schema mappers return tables keyed by
+     * table name (associative array), so the first element must be obtained via
+     * array_values() — indexing [0] directly would fail. Falls back to
+     * "alphabetical" when there are no tables.
+     *
+     * @param array $tables
+     *
+     * @return Config|array|string
+     */
+    protected function resolveTableOrder(array $tables): Config|array|string
+    {
+        $first = array_values($tables)[0] ?? null;
+
+        if ($first) {
+            return $this->config($first, 'table_order', 'alphabetical');
+        }
+
+        return 'alphabetical';
     }
 
     /**
@@ -465,11 +486,12 @@ class Factory
      */
     protected function properties(Model $model)
     {
+        $order = $model->config('annotations_order', 'alphabetical');
+
         // Process property annotations
         $annotations = '';
 
-        $properties = $model->getProperties();
-        ksort($properties);
+        $properties = $this->orderAnnotations($model->getProperties(), $order);
 
         foreach ($properties as $name => $hint) {
             $annotations .= $this->class->annotation('property', "$hint \$$name");
@@ -480,8 +502,7 @@ class Factory
             $annotations .= "\n * ";
         }
 
-        $relations = $model->getRelations();
-        ksort($relations);
+        $relations = $this->orderAnnotations($model->getRelations(), $order);
 
         foreach ($relations as $name => $relation) {
             // TODO: Handle collisions, perhaps rename the relation.
@@ -495,12 +516,106 @@ class Factory
     }
 
     /**
+     * Order a name-keyed associative array (annotations, casts, hints, ...),
+     * controlled by an "order" definition:
+     *
+     * - "alphabetical" (default): items are sorted by key.
+     * - "database": items keep the order returned by the schema mapper.
+     * - array of names: an explicit order. Items not listed are appended after
+     *   the listed ones, sorted alphabetically.
+     *
+     * @param array $items
+     * @param string|array $order
+     *
+     * @return array
+     */
+    protected function orderAnnotations(array $items, $order): array
+    {
+        if (is_array($order)) {
+            $rank = array_flip($order);
+
+            uksort($items, function ($a, $b) use ($rank) {
+                return $this->compareOrder((string) $a, (string) $b, $rank);
+            });
+
+            return $items;
+        }
+
+        if ($order === 'database') {
+            return $items;
+        }
+
+        ksort($items);
+
+        return $items;
+    }
+
+    /**
+     * Order a list of names or objects, controlled by an "order" definition
+     * with the same semantics as {@see orderAnnotations()}. The $name callback
+     * resolves the sortable name for each item.
+     *
+     * @param array $items
+     * @param string|array $order
+     * @param callable $name
+     *
+     * @return array
+     */
+    protected function orderList(array $items, $order, callable $name): array
+    {
+        if (is_array($order)) {
+            $rank = array_flip($order);
+
+            usort($items, function ($a, $b) use ($rank, $name) {
+                return $this->compareOrder($name($a), $name($b), $rank);
+            });
+
+            return $items;
+        }
+
+        if ($order === 'database') {
+            return $items;
+        }
+
+        usort($items, function ($a, $b) use ($name) {
+            return strcmp($name($a), $name($b));
+        });
+
+        return $items;
+    }
+
+    /**
+     * Compare two names against a rank map produced by array_flip($order).
+     * Names not present in the map sort last, alphabetically.
+     *
+     * @param string $a
+     * @param string $b
+     * @param array $rank
+     *
+     * @return int
+     */
+    protected function compareOrder($a, $b, array $rank): int
+    {
+        $rankA = $rank[$a] ?? count($rank);
+        $rankB = $rank[$b] ?? count($rank);
+
+        if ($rankA !== $rankB) {
+            return $rankA <=> $rankB;
+        }
+
+        return strcmp($a, $b);
+    }
+
+    /**
      * @param \Reliese\Coders\Model\Model $model
      *
      * @return string
      */
-    protected function body(Model $model)
+    protected function body(Model $model): string
     {
+        $annotationOrder = $model->config('annotations_order', 'alphabetical');
+        $propertyOrder = $model->config('properties_order', 'database');
+
         $body = '';
 
         foreach ($model->getTraits() as $trait) {
@@ -526,8 +641,7 @@ class Factory
 
         if ($model->usesPropertyConstants()) {
             // Take all properties and exclude already added constants with timestamps.
-            $properties = array_keys($model->getProperties());
-            sort($properties);
+            $properties = array_keys($this->orderAnnotations($model->getProperties(), $annotationOrder));
             $properties = array_diff($properties, $excludedConstants);
 
             foreach ($properties as $property) {
@@ -577,22 +691,38 @@ class Factory
         }
 
         if ($model->usesColumnList()) {
-            $properties = array_keys($model->getProperties());
+            $properties = array_keys($this->orderAnnotations($model->getProperties(), $propertyOrder));
 
             $body .= "\n";
             $body .= $this->class->field('columns', $properties);
         }
 
         if ($model->hasCasts()) {
-            $body .= $this->class->field('casts', $model->getCasts(), ['before' => "\n"]);
+            $body .= $this->class->field(
+                'casts',
+                $this->orderAnnotations($model->getCasts(), $propertyOrder),
+                ['before' => "\n"]
+            );
         }
 
         if ($model->hasHidden() && ($model->doesNotUseBaseFiles() || $model->hiddenInBaseFiles())) {
-            $body .= $this->class->field('hidden', $model->getHidden(), ['before' => "\n"]);
+            $body .= $this->class->field(
+                'hidden',
+                $this->orderList($model->getHidden(), $propertyOrder, function ($name) {
+                    return $name;
+                }),
+                ['before' => "\n"]
+            );
         }
 
         if ($model->hasFillable() && ($model->doesNotUseBaseFiles() || $model->fillableInBaseFiles())) {
-            $body .= $this->class->field('fillable', $model->getFillable(), ['before' => "\n"]);
+            $body .= $this->class->field(
+                'fillable',
+                $this->orderList($model->getFillable(), $propertyOrder, function ($name) {
+                    return $name;
+                }),
+                ['before' => "\n"]
+            );
         }
 
         if ($model->isView()) {
@@ -600,20 +730,22 @@ class Factory
         }
 
         if ($model->hasHints() && $model->usesHints()) {
-            $body .= $this->class->field('hints', $model->getHints(), ['before' => "\n"]);
+            $body .= $this->class->field(
+                'hints',
+                $this->orderAnnotations($model->getHints(), $propertyOrder),
+                ['before' => "\n"]
+            );
         }
 
-        $mutations = $model->getMutations();
-        usort($mutations, function ($a, $b) {
-            return strcmp($a->name(), $b->name());
+        $mutations = $this->orderList($model->getMutations(), $annotationOrder, function ($mutation) {
+            return $mutation->name();
         });
 
         foreach ($mutations as $mutation) {
             $body .= $this->class->method($mutation->name(), $mutation->body(), ['before' => "\n"]);
         }
 
-        $relations = $model->getRelations();
-        ksort($relations);
+        $relations = $this->orderAnnotations($model->getRelations(), $annotationOrder);
 
         foreach ($relations as $constraint) {
             $body .= $this->class->method(
@@ -638,7 +770,7 @@ class Factory
      *
      * @return string
      */
-    protected function modelPath(Model $model, $custom = [])
+    protected function modelPath(Model $model, array $custom = []): string
     {
         $modelsDirectory = $this->path(array_merge([$this->config($model->getBlueprint(), 'path')], $custom));
 
@@ -654,7 +786,7 @@ class Factory
      *
      * @return string
      */
-    protected function path($pieces)
+    protected function path($pieces): string
     {
         return implode(DIRECTORY_SEPARATOR, (array) $pieces);
     }
@@ -664,7 +796,7 @@ class Factory
      *
      * @return bool
      */
-    public function needsUserFile(Model $model)
+    public function needsUserFile(Model $model): bool
     {
         return ! $this->files->exists($this->modelPath($model)) && $model->usesBaseFiles();
     }
@@ -674,7 +806,7 @@ class Factory
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    protected function createUserFile(Model $model)
+    protected function createUserFile(Model $model): void
     {
         $file = $this->modelPath($model);
 
@@ -692,7 +824,7 @@ class Factory
      * @param Model $model
      * @return string
      */
-    private function formatBaseClasses(Model $model)
+    private function formatBaseClasses(Model $model): string
     {
         return "use {$model->getBaseNamespace()}\\{$model->getClassName()} as {$this->getBaseClassName($model)};";
     }
@@ -701,7 +833,7 @@ class Factory
      * @param Model $model
      * @return string
      */
-    private function getBaseClassName(Model $model)
+    private function getBaseClassName(Model $model): string
     {
         return 'Base'.$model->getClassName();
     }
@@ -711,7 +843,7 @@ class Factory
      *
      * @return string
      */
-    protected function userFileBody(Model $model)
+    protected function userFileBody(Model $model): string
     {
         $body = '';
 
@@ -736,7 +868,7 @@ class Factory
      *
      * @return mixed|\Reliese\Coders\Model\Config
      */
-    public function config(?Blueprint $blueprint = null, $key = null, $default = null)
+    public function config(?Blueprint $blueprint = null, $key = null, $default = null): mixed
     {
         if (is_null($blueprint)) {
             return $this->config;
