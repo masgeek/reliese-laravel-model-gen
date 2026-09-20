@@ -160,9 +160,8 @@ class Factory
         $mapper = $this->makeSchema($schema);
 
         $tables = $mapper->tables();
-        usort($tables, function ($a, $b) {
-            return strcmp($a->table(), $b->table());
-        });
+        $order = ! empty($tables) ? $this->config($tables[0], 'table_order', 'alphabetical') : 'alphabetical';
+        $tables = $this->orderTables($tables, $order);
 
         foreach ($tables as $blueprint) {
             if ($blueprint->isView() && ! $this->config($blueprint, 'with_views', false)) {
@@ -172,6 +171,50 @@ class Factory
                 $this->create($mapper->schema(), $blueprint->table());
             }
         }
+    }
+
+    /**
+     * Order the tables to be generated, controlled by the "table_order" config
+     * key:
+     *
+     * - "alphabetical" (default): tables are sorted by name.
+     * - "database": tables keep the order returned by the schema mapper.
+     * - array of table names: an explicit order. Tables not listed are appended
+     *   after the listed ones, sorted alphabetically.
+     *
+     * @param array $tables
+     * @param string|array $order
+     *
+     * @return array
+     */
+    protected function orderTables(array $tables, $order)
+    {
+        if (is_array($order)) {
+            $rank = array_flip($order);
+
+            usort($tables, function ($a, $b) use ($rank) {
+                $rankA = $rank[$a->table()] ?? count($rank);
+                $rankB = $rank[$b->table()] ?? count($rank);
+
+                if ($rankA !== $rankB) {
+                    return $rankA <=> $rankB;
+                }
+
+                return strcmp($a->table(), $b->table());
+            });
+
+            return $tables;
+        }
+
+        if ($order === 'database') {
+            return $tables;
+        }
+
+        usort($tables, function ($a, $b) {
+            return strcmp($a->table(), $b->table());
+        });
+
+        return $tables;
     }
 
     /**
