@@ -90,6 +90,63 @@ The resolution order is: `--pg-schema` option → `DB_SCHEMA` env variable → `
 To change the scaffolding behaviour you can make `config/models.php` configuration file
 fit your database needs. [Check it out](https://github.com/masgeek/laravel-model-gen/blob/master/config/models.php) ;-)
 
+#### Configuring attribute casts
+
+Columns are cast using the `casts` key. Patterns use Laravel's `Str::is` glob syntax,
+so `'*_json' => 'json'` casts every column whose name ends in `_json`:
+
+```php
+'*' => [
+    'casts' => [
+        '*_json' => 'json',
+        'is_active' => 'boolean',
+        'payload' => 'json',
+        'password' => 'hashed',
+        'token' => 'encrypted',
+        'records' => 'encrypted:array',
+        'lease_expires_at' => 'immutable_datetime',
+    ],
+],
+```
+
+#### Per-model casts
+
+A column with the same name may need different casts on different models. Define a
+`casts` block inside that table's own configuration to override only that model —
+global patterns still apply to every other column of the model:
+
+```php
+'*' => [
+    'casts' => [
+        'password' => 'hashed',
+        'records' => 'encrypted:array',
+    ],
+],
+
+'api_keys' => [
+    'casts' => [
+        'password' => 'encrypted', // overrides the global 'hashed' for api_keys only
+    ],
+],
+```
+
+Per-model patterns take precedence over the global ones and are merged, not replaced.
+The same override mechanism works for any level of the resolution tree (connection,
+schema, or table).
+
+#### Controlling the generation order
+
+Models are generated in alphabetical table order by default. To control the
+order, set `table_order` in `config/models.php`:
+
+```php
+// natural order returned by the database
+'table_order' => 'database',
+
+// or an explicit sequence; unlisted tables are appended alphabetically
+'table_order' => ['users', 'teams', 'memberships'],
+```
+
 ### Tips
 
 #### 1. Keeping model changes
