@@ -54,6 +54,23 @@ class Config
             "*.$key",
         ];
 
+        // Column casts are merged across every level of the resolution tree so
+        // per-model blocks (e.g. 'users' => ['casts' => [...]]) layer on top of
+        // the global ('*' => ['casts' => [...]]) defaults instead of replacing
+        // them. More specific patterns win on collisions and are evaluated
+        // first by the generator.
+        if ($key === 'casts') {
+            $casts = [];
+            foreach ($priorityKeys as $priorityKey) {
+                $level = Arr::get($this->config, $priorityKey);
+                if (is_array($level)) {
+                    $casts = $casts + $level;
+                }
+            }
+
+            return empty($casts) ? $default : $casts;
+        }
+
         foreach ($priorityKeys as $priorityKey) {
             $value = Arr::get($this->config, $priorityKey);
 
