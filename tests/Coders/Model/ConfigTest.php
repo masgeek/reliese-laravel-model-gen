@@ -239,6 +239,67 @@ class ConfigTest extends TestCase
                 'FirstKey',
                 'A Seventh Value'
             ],
+
+            // -------------------------------------------------------------------
+            // 'casts' is merged across resolution levels instead of first-hit-wins
+            // -------------------------------------------------------------------
+
+            'Casts Are Merged Across Global And Table Blocks' => [
+                [
+                    '*' => [
+                        'casts' => ['*_json' => 'json', 'password' => 'hashed', 'token' => 'encrypted']
+                    ],
+                    'my_table' => [
+                        'casts' => ['password' => 'encrypted', 'result' => 'encrypted:array']
+                    ],
+                ],
+                'casts',
+                [
+                    'password' => 'encrypted',
+                    'result' => 'encrypted:array',
+                    '*_json' => 'json',
+                    'token' => 'encrypted',
+                ]
+            ],
+
+            'Casts Table Block Wins For A Shared Pattern' => [
+                [
+                    '*' => [
+                        'casts' => ['password' => 'hashed', 'token' => 'encrypted']
+                    ],
+                    'my_table' => [
+                        'casts' => ['token' => 'encrypted:array']
+                    ],
+                ],
+                'casts',
+                ['token' => 'encrypted:array', 'password' => 'hashed']
+            ],
+
+            'Casts Table Block Only' => [
+                [
+                    'my_table' => [
+                        'casts' => ['result' => 'encrypted:array']
+                    ],
+                ],
+                'casts',
+                ['result' => 'encrypted:array']
+            ],
+
+            'Casts Global Block Only' => [
+                [
+                    '*' => [
+                        'casts' => ['*_json' => 'json']
+                    ],
+                ],
+                'casts',
+                ['*_json' => 'json']
+            ],
+
+            'Casts Return Default When Nothing Defined' => [
+                ['my_table' => ['FirstKey' => 'Some Value']],
+                'casts',
+                null
+            ],
         ];
     }
 }
