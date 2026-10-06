@@ -442,6 +442,53 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Annotation Order
+        |--------------------------------------------------------------------------
+        |
+        | Controls the order of the "@property" annotations generated in each
+        | model's docblock (both the column attributes and the relation
+        | annotations). It also orders the generated property constants
+        | (with_property_constants), setter methods and relation methods so the
+        | class body stays consistent with the docblock.
+        |
+        | - "alphabetical" (default): sorted by name.
+        | - "database": keep the order returned by the database.
+        | - an array of column/relation names for full control, e.g.
+        |
+        |       'annotations_order' => ['id', 'user_invitation_id', 'role_id'],
+        |
+        |   Items not listed are appended after the listed ones, in
+        |   alphabetical order.
+        |
+        */
+
+        'annotations_order' => 'alphabetical',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Property Order
+        |--------------------------------------------------------------------------
+        |
+        | Controls the order of the attribute arrays written into the model:
+        | "$columns" (with_column_list), "$casts", "$hidden", "$fillable" and
+        | "$hints". By default these follow the column order returned by the
+        | database, matching the previous behaviour.
+        |
+        | - "database" (default): keep the order columns were read in.
+        | - "alphabetical": sort the attributes by name.
+        | - an array of column names for full control, e.g.
+        |
+        |       'properties_order' => ['id', 'user_invitation_id', 'role_id'],
+        |
+        |   Attributes not listed are appended after the listed ones, in
+        |   alphabetical order.
+        |
+        */
+
+        'properties_order' => 'database',
+
+        /*
+        |--------------------------------------------------------------------------
         | Table Prefix
         |--------------------------------------------------------------------------
         |
