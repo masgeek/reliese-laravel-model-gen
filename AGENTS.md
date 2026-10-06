@@ -8,9 +8,15 @@ A Laravel package (`masgeek/reliese-laravel-model-gen`) that reverse-engineers E
 
 - `composer install` — install dependencies (vendor/ is gitignored).
 - `vendor/bin/phpunit --no-coverage` — run the full suite. Always pass `--no-coverage`; coverage needs xdebug/pcov, which is not set up.
-- No linter/static-analysis/formatter is configured. Don't invent one (no phpstan, pint, php-cs-fixer, etc.).
+- Single test: `vendor/bin/phpunit --no-coverage --filter ClassifyTest` (or `path/to/SomeTest.php`).
+- `vendor/bin/phpstan analyse` — config in `phpstan.neon` (level 1, `src/`).
+- `vendor/bin/php-cs-fixer check --diff` / `fix` — config in `.php-cs-fixer.dist.php` (PSR-12 + import sorting). `line_ending` is disabled on purpose: the git index is LF while Windows checkouts are CRLF, so enforcing it locally rewrites files.
+- `vendor/bin/pest` — same suite via Pest (what CI runs). `pest --no-configuration` is unsupported in Pest 3.
+- No `artisan`; nothing to boot locally.
 
-Tests are pure unit tests using Mockery — no live DB, no services. 107 tests, run in <1s.
+CI (`unit-test.yml`) runs `composer validate`, `php -l` over `src/`, then phpstan -> php-cs-fixer -> pest on PHP 8.3/8.4/8.5. Run all four locally before pushing.
+
+Tests are pure unit tests using Mockery — no live DB, no services. 114 tests, run in <1s. `tests/bootstrap.php` only requires `vendor/autoload.php`; there is no Laravel app bootstrapping, so anything needing a container/DB must be mocked.
 
 ## Architecture
 
@@ -23,6 +29,8 @@ Tests are pure unit tests using Mockery — no live DB, no services. 107 tests, 
 
 - `tests/TestCase.php` is a **non-namespaced** `TestCase` (extends `PHPUnit\Framework\TestCase`), loaded via the `autoload-dev` classmap. Test files use that global class directly. New tests must end in `Test.php` under `tests/` for phpunit.xml (`suffix="Test.php"`) to discover them.
 - `composer.lock` is gitignored (present locally for reproducibility, but never committed).
-- The `code:models` command supports `--schema`, `--connection`, `--table`, `--view`, `--pg-schema`, and `--dry-run`. `--pg-schema` resolution order: option -> `DB_SCHEMA` env -> connection config -> `public`.
+- `phpunit.xml.bak` is a stale PHPUnit 9 config; the live config is `phpunit.xml` (PHPUnit 11). Don't edit the `.bak`.
+- CI also runs `php -l` over `src/`; keep `src/` syntax clean for every PHP 8.2+ syntax level even though CI only tests 8.3+.
+- The `code:models` command lives at `src/Coders/Console/CodeModelsCommand.php` and supports `--schema` (`-s`), `--connection` (`-c`), `--table` (`-t`), `--view`, `--pg-schema`, and `--dry-run`. `--pg-schema` resolution order: option -> `DB_SCHEMA` env -> connection config -> `public`.
 - `config/models.php` is the single source of generation behavior; `docs/improvements.md` and `ENHANCEMENTS.md` track implemented/planned improvements — check them before adding a feature that may already exist.
-- Default integration branch is `develop`. CI (`UnitTests` workflow) runs `vendor/bin/phpunit --no-coverage` on PHP 8.3/8.4/8.5 (`prefer-stable`). After a green run, `pr-automation` auto-approves the PR using a GitHub App token (`vars.CLIENT_ID` + `secrets.APP_PRIVATE_KEY`). Pushing to `develop` auto-opens a "Next release" PR to `main`; pushing to `main` bumps the `v*` tag and drafts a GitHub release (`bump-and-tag` workflow).
+- Default integration branch is `develop`. After a green run, `pr-automation` auto-approves the PR using a GitHub App token (`vars.CLIENT_ID` + `secrets.APP_PRIVATE_KEY`). Pushing to `develop` auto-opens a "Next release" PR to `main`; pushing to `main` bumps the `v*` tag and drafts a GitHub release (`bump-and-tag` workflow).
