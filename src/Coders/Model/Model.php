@@ -7,13 +7,13 @@
 
 namespace Reliese\Coders\Model;
 
-use Illuminate\Support\Str;
-use Reliese\Meta\Blueprint;
-use Illuminate\Support\Fluent;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Reliese\Coders\Model\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
+use Reliese\Coders\Model\Relations\BelongsTo;
 use Reliese\Coders\Model\Relations\ReferenceFactory;
+use Reliese\Meta\Blueprint;
 
 class Model
 {

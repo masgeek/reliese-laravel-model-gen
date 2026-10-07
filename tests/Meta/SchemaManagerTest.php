@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\ConnectionInterface;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Reliese\Meta\Blueprint;
 use Reliese\Meta\Schema;
@@ -22,7 +21,9 @@ use Reliese\Meta\SchemaManager;
 
 class StubUnregisteredConnection extends \Illuminate\Database\Connection
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     // Satisfy the abstract method required by Connection.
     protected function getDefaultQueryGrammar(): \Illuminate\Database\Query\Grammars\Grammar
@@ -33,12 +34,18 @@ class StubUnregisteredConnection extends \Illuminate\Database\Connection
 
 class StubBaseConnection extends \Illuminate\Database\PostgresConnection
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 }
 
-class StubChildConnection extends StubBaseConnection {}
+class StubChildConnection extends StubBaseConnection
+{
+}
 
-class StubGrandchildConnection extends StubChildConnection {}
+class StubGrandchildConnection extends StubChildConnection
+{
+}
 
 // ---------------------------------------------------------------------------
 // A minimal Schema implementation used as a valid mapper in registration tests.
@@ -46,7 +53,9 @@ class StubGrandchildConnection extends StubChildConnection {}
 
 class ValidFakeSchema implements Schema
 {
-    public function __construct($schema, ConnectionInterface $connection) {}
+    public function __construct($schema, ConnectionInterface $connection)
+    {
+    }
 
     public static function schemas(ConnectionInterface $connection): array
     {
@@ -58,15 +67,32 @@ class ValidFakeSchema implements Schema
         return \Mockery::mock(ConnectionInterface::class);
     }
 
-    public function schema(): string { return ''; }
-    public function tables(): array { return []; }
-    public function has($table): bool { return false; }
-    public function table($table): Blueprint { return new Blueprint('', '', $table); }
-    public function referencing(Blueprint $table): array { return []; }
+    public function schema(): string
+    {
+        return '';
+    }
+    public function tables(): array
+    {
+        return [];
+    }
+    public function has($table): bool
+    {
+        return false;
+    }
+    public function table($table): Blueprint
+    {
+        return new Blueprint('', '', $table);
+    }
+    public function referencing(Blueprint $table): array
+    {
+        return [];
+    }
 }
 
 // A second valid mapper used to distinguish "which one wins" in resolution tests.
-class AnotherFakeSchema extends ValidFakeSchema {}
+class AnotherFakeSchema extends ValidFakeSchema
+{
+}
 
 // ---------------------------------------------------------------------------
 // Testable subclass that skips boot() so no connection is needed for unit tests.
