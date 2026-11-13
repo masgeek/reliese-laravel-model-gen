@@ -32,6 +32,47 @@ php artisan vendor:publish --tag=reliese-models
 php artisan config:clear
 ```
 
+### Local development
+
+This repository is the package itself and has no `artisan` binary. To try a local
+checkout inside a Laravel application, point Composer at it with a `path` repository.
+
+In the Laravel application's `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../reliese-laravel-model-gen",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
+}
+```
+
+Then require the local package and publish its config:
+
+```shell
+composer require --dev masgeek/laravel-model-gen:@dev
+
+php artisan vendor:publish --tag=reliese-models
+php artisan config:clear
+```
+
+Run the generator from the application root:
+
+```shell
+php artisan code:models --dry-run   # preview without writing files
+php artisan code:models             # write models
+```
+
+With `"symlink": true`, edits in this repository are picked up immediately. If
+Composer falls back to copying (common on Windows without symlink support), re-run
+`composer update masgeek/laravel-model-gen` after each change.
+
 ## Models
 
 ![Generating models with artisan](https://cdn-images-1.medium.com/max/800/1*hOa2QxORE2zyO_-ZqJ40sA.png "Making artisan code my Eloquent models")
@@ -112,27 +153,51 @@ so `'*_json' => 'json'` casts every column whose name ends in `_json`:
 #### Per-model casts
 
 A column with the same name may need different casts on different models. Define a
-`casts` block inside that table's own configuration to override only that model —
-global patterns still apply to every other column of the model:
+root-level table block whose key is the table name, with its own `casts` block. It
+must be a **sibling of `'*'`, not nested inside it** — nested table keys are silently
+ignored:
 
 ```php
-'*' => [
-    'casts' => [
-        'password' => 'hashed',
-        'records' => 'encrypted:array',
+return [
+    '*' => [
+        'casts' => [
+            'password' => 'hashed',
+            'records' => 'encrypted:array',
+        ],
     ],
-],
 
-'api_keys' => [
-    'casts' => [
-        'password' => 'encrypted', // overrides the global 'hashed' for api_keys only
+    // Root-level table block: applies to the `api_keys` table only.
+    'api_keys' => [
+        'casts' => [
+            'password' => 'encrypted', // overrides the global 'hashed'
+        ],
     ],
-],
+];
 ```
 
-Per-model patterns take precedence over the global ones and are merged, not replaced.
-The same override mechanism works for any level of the resolution tree (connection,
-schema, or table).
+Table-level patterns take precedence over the global ones and are merged, not
+replaced, so global patterns still apply to every other column of that model.
+
+The same mechanism works at every level of the resolution tree. Keys are checked
+from most specific to least specific:
+
+```
+@connections.{connection}.{schema}.{table}
+@connections.{connection}.{table}
+@connections.{connection}.{schema}
+@connections.{connection}
+{schema}.{table}
+{table}
+{schema}
+*
+```
+
+For `casts`, values from every level are merged and the most specific block wins on
+the same pattern. Other keys use the first non-null value. For MySQL, `{schema}` is
+the database name; for PostgreSQL it is the schema namespace.
+
+Table blocks (and their casts) do not apply to tables matched by `except`. Generate
+one explicitly with `code:models --table=<name>` if needed.
 
 #### Controlling the generation order
 
