@@ -331,10 +331,10 @@ return [
         | assigned. We have defined some fields for you. Feel free to
         | modify them to fit your needs.
         |
-        | Patterns defined here apply to every generated model. If a specific
-        | model needs its own casting, define a per-model 'casts' block (see
-        | the Per-Model Casts section below). Per-model patterns win over these
-        | global ones and are merged on top of them.
+        | Patterns defined here apply to every generated model. To override a
+        | cast for one table, add a root-level table block with its own 'casts'
+        | key (see "Table-Specific Configuration" below). Table-level patterns
+        | win over these global ones and are merged on top of them.
         |
         */
 
@@ -358,35 +358,6 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Per-Model Casts
-        |--------------------------------------------------------------------------
-        |
-        | Not every column with the same name needs the same cast. To cast a
-        | column differently for a single model, add a 'casts' key inside that
-        | table's own configuration block. Table-level patterns are merged on
-        | top of the global 'casts' above, so the global patterns still apply
-        | to every other column of the model and only the ones you list here
-        | are overridden.
-        |
-        | Example: keep 'password' as 'hashed' for most models but make it
-        | 'encrypted' only on the 'api_keys' model:
-        |
-        | 'api_keys' => [
-        |     'casts' => [
-        |         'password' => 'encrypted',
-        |         'records' => 'encrypted:array',
-        |         'lease_expires_at' => 'immutable_datetime',
-        |     ],
-        | ],
-        |
-        | Any key from the resolution tree works the same way (connection,
-        | schema, table), from most specific to least specific. Patterns listed
-        | in a more specific block win over the same pattern in the global one.
-        |
-        */
-
-        /*
-        |--------------------------------------------------------------------------
         | Excluded Tables
         |--------------------------------------------------------------------------
         |
@@ -394,6 +365,9 @@ return [
         | them, because you don't want a model for them or any other reason.
         | You can define those tables bellow. The migrations table was
         | filled for you, since you may not want a model for it.
+        |
+        | Table-specific blocks (including 'casts') are ignored for tables
+        | matched here. To generate one anyway, pass --table=<name>.
         |
         */
 
@@ -654,6 +628,61 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Table-Specific Configuration
+    |--------------------------------------------------------------------------
+    |
+    | To override settings for a single table, add a block at the ROOT of this
+    | file (a sibling of '*'), using the table name as the key. Do NOT nest it
+    | inside the '*' block: nested table keys are not part of the configuration
+    | resolution tree and will be silently ignored.
+    |
+    | Table blocks are resolved before the global '*' defaults, so only the
+    | keys you specify are overridden; everything else falls back to '*'.
+    |
+    | The complete resolution order, from highest to lowest precedence, is:
+    |
+    |       @connections.{connection}.{schema}.{table}
+    |       @connections.{connection}.{table}
+    |       @connections.{connection}.{schema}
+    |       @connections.{connection}
+    |       {schema}.{table}
+    |       {table}
+    |       {schema}
+    |       *
+    |
+    | For MySQL, {schema} is the database name; for PostgreSQL it is the schema
+    | namespace.
+    |
+    | The 'casts' key behaves slightly differently: casts from every level are
+    | merged instead of the first block winning outright. A table-level cast
+    | overrides the same pattern from '*', while all other global patterns still
+    | apply. Because patterns are evaluated most-specific first, a broad
+    | table-level pattern (such as '*') will shadow global patterns.
+    |
+    | Example: keep the global casts, but store these columns as arrays only on
+    | the tables below.
+    |
+    | 'price_catalogue_history' => [
+    |     'casts' => [
+    |         'old_values' => 'array',
+    |         'new_values' => 'array',
+    |     ],
+    | ],
+    |
+    | 'api_keys' => [
+    |     'casts' => [
+    |         'password' => 'encrypted',
+    |     ],
+    | ],
+    |
+    | Table-specific blocks are ignored for tables matched by the 'except'
+    | list in the '*' block above. They still apply when a table is generated
+    | explicitly with --table.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
     | Database Specifics
     |--------------------------------------------------------------------------
     |
@@ -724,19 +753,22 @@ return [
     | model with a read only setup, or enforcing a different set of rules
     | for a connection, e.g. using snake_case naming over CamelCase naming.
     |
-    | This supports nesting with the following key configuration values, in
-    | reverse precedence order (i.e. the last one found becomes the value).
+    | Connection-specific settings are keyed by '@connections', mirroring the
+    | resolution order shown in "Table-Specific Configuration" above. Keys are
+    | checked from most specific to least specific, and the first non-null
+    | value wins.
     |
-    |       connections.{connection_name}.property
-    |       connections.{connection_name}.{database_name}.property
-    |       connections.{connection_name}.{table_name}.property
-    |       connections.{connection_name}.{database_name}.{table_name}.property
+    |       @connections.{connection_name}.{schema}.{table}.property
+    |       @connections.{connection_name}.{table}.property
+    |       @connections.{connection_name}.{schema}.property
+    |       @connections.{connection_name}.property
     |
-    | These values will override those defined in the section above.
+    | For MySQL, {schema} is the database name; for PostgreSQL it is the schema
+    | namespace. These values override those defined in the section above.
     |
     */
 
-//    'connections' => [
+//    '@connections' => [
 //        'read_only_external' => [
 //            'parent' => \App\Models\ReadOnlyModel::class,
 //            'connection' => true,
