@@ -2,11 +2,11 @@
 
 namespace Reliese\Meta\Postgres;
 
+use Illuminate\Database\Connection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
-use Reliese\Meta\Blueprint;
 use Illuminate\Support\Fluent;
-use Illuminate\Database\Connection;
+use Reliese\Meta\Blueprint;
 
 /**
  * Created by rwdim from cristians MySql original.

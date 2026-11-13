@@ -129,8 +129,10 @@ class Column implements \Reliese\Meta\Column
      */
     protected function parseAutoincrement(Fluent $attributes)
     {
-        $attributes['autoincrement'] = preg_match('/serial/i',
-            $this->get('data_type', '')) || $this->defaultIsNextVal($attributes);
+        $attributes['autoincrement'] = preg_match(
+            '/serial/i',
+            $this->get('data_type', '')
+        ) || $this->defaultIsNextVal($attributes);
     }
 
     /**

@@ -1,0 +1,14 @@
+parameters:
+    level: 1
+    paths:
+        - src
+    ignoreErrors:
+        # SchemaManager::$lookup references connection classes from optional,
+        # not-required packages (larapack/doctrine-support, staudenmeir/laravel-cte).
+        # They are matched by name only and never autoloaded.
+        -
+            message: '#Class Larapack\\DoctrineSupport\\Connections\\MySqlConnection not found#'
+            path: src/Meta/SchemaManager.php
+        -
+            message: '#Class Staudenmeir\\LaravelCte\\Connections\\MySqlConnection not found#'
+            path: src/Meta/SchemaManager.php

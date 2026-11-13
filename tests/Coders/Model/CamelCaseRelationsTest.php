@@ -180,13 +180,16 @@ class CamelCaseRelationsTest extends TestCase
         $pattern = '/CONSTRAINT\s+(\S+)\s+FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(\s]+)\s*\(([^\)]+)\)/mi';
         $matches = [];
 
-        $this->assertSame(1, preg_match($pattern, $sql, $matches),
-            "Pattern did not match SQL: $sql");
+        $this->assertSame(
+            1,
+            preg_match($pattern, $sql, $matches),
+            "Pattern did not match SQL: $sql"
+        );
 
         $this->assertSame($expectedConstraint, $matches[1], 'Constraint name mismatch');
-        $this->assertSame($expectedFkCols,     $matches[2], 'FK columns mismatch');
-        $this->assertSame($expectedRefTable,   $matches[3], 'Referenced table mismatch');
-        $this->assertSame($expectedRefCols,    $matches[4], 'Referenced columns mismatch');
+        $this->assertSame($expectedFkCols, $matches[2], 'FK columns mismatch');
+        $this->assertSame($expectedRefTable, $matches[3], 'Referenced table mismatch');
+        $this->assertSame($expectedRefCols, $matches[4], 'Referenced columns mismatch');
     }
 
     public function testMySqlFkRegexDoesNotMatchWithoutConstraintClause(): void
@@ -195,7 +198,10 @@ class CamelCaseRelationsTest extends TestCase
         $sql = 'FOREIGN KEY (user_id) REFERENCES users (id)';
         $pattern = '/CONSTRAINT\s+(\S+)\s+FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(\s]+)\s*\(([^\)]+)\)/mi';
 
-        $this->assertSame(0, preg_match($pattern, $sql),
-            'Pattern should not match SQL without CONSTRAINT clause');
+        $this->assertSame(
+            0,
+            preg_match($pattern, $sql),
+            'Pattern should not match SQL without CONSTRAINT clause'
+        );
     }
 }

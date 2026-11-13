@@ -80,6 +80,14 @@ Check off each item as it is implemented and merged.
   or an explicit array of table names (unlisted tables follow alphabetically).
   _File:_ `src/Coders/Model/Factory.php`
 
+- [x] **Fillable primary key columns**
+  Primary keys were always removed from `$fillable`, preventing mass assignment of
+  non-auto-increment keys. The new `fillable_primary_keys` config key accepts `true`
+  (all primary key columns) or an array of column names/patterns, and can be enabled
+  per table via a root-level table block. An explicit `guarded` pattern still wins.
+  _Files:_ `config/models.php`, `src/Coders/Model/Model.php`,
+  `tests/Coders/Model/FillablePrimaryKeysTest.php`
+
 - [ ] **`strict_types` config option**
   Add a `'strict_types' => false` config key. When `true`, prepend
   `declare(strict_types=1);` to every generated file.
@@ -127,5 +135,6 @@ Check off each item as it is implemented and merged.
 | 10 | Codegen | PHP 8.1 enum casts | [ ] |
 | 11 | Codegen | Per-model `casts` overrides (merged, not replaced) | [x] |
 | 12 | Codegen | Config-driven generation order (`table_order`) | [x] |
-| 13 | Codegen | Nullable type-hint style config | [ ] |
-| 14 | Relations | `HasManyThrough` / `HasOneThrough` | [ ] |
+| 13 | Codegen | Fillable primary key columns (`fillable_primary_keys`) | [x] |
+| 14 | Codegen | Nullable type-hint style config | [ ] |
+| 15 | Relations | `HasManyThrough` / `HasOneThrough` | [ ] |

@@ -2,10 +2,10 @@
 
 namespace Reliese\Meta\Sqlite;
 
-use Illuminate\Support\Arr;
-use Reliese\Meta\Blueprint;
-use Illuminate\Support\Fluent;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Fluent;
+use Reliese\Meta\Blueprint;
 
 /**
  * Created by Cristian.
