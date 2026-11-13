@@ -18,7 +18,7 @@ Composer script aliases (defined in `composer.json`): `composer test` (`phpunit 
 
 CI (`unit-test.yml`) runs `composer validate`, `php -l` over `src/`, then phpstan -> php-cs-fixer -> pest on PHP 8.3/8.4/8.5. Run all four locally before pushing.
 
-Tests are pure unit tests using Mockery — no live DB, no services; 114 tests in <1s. `tests/bootstrap.php` only requires `vendor/autoload.php`; there is no Laravel app bootstrapping, so anything needing a container/DB must be mocked. `orchestra/testbench` is installed but unused.
+Tests are pure unit tests using Mockery — no live DB, no services; the full suite runs in <1s. `tests/bootstrap.php` only requires `vendor/autoload.php`; there is no Laravel app bootstrapping, so anything needing a container/DB must be mocked. `orchestra/testbench` is installed but unused.
 
 ## Architecture
 

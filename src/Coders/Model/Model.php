@@ -1196,7 +1196,10 @@ class Model
             $this->getDeletedAtField(),
         ];
 
-        if ($this->primaryKeys->columns) {
+        $primaryKeyIsFillable = $this->isPrimaryKeyColumn($column)
+            && $this->allowsFillablePrimaryKey($column);
+
+        if (! $primaryKeyIsFillable && $this->primaryKeys->columns) {
             $protected = array_merge($protected, $this->primaryKeys->columns);
         }
 
@@ -1207,6 +1210,49 @@ class Model
         }
 
         return true;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return bool
+     */
+    protected function isPrimaryKeyColumn($column)
+    {
+        return in_array($column, (array) $this->primaryKeys->columns, true);
+    }
+
+    /**
+     * Whether the given primary key column may be mass assigned, controlled by
+     * the "fillable_primary_keys" config key.
+     *
+     * @param string $column
+     *
+     * @return bool
+     */
+    protected function allowsFillablePrimaryKey($column)
+    {
+        $config = $this->config('fillable_primary_keys', false);
+
+        if ($config === true) {
+            return true;
+        }
+
+        if ($config === false || $config === null) {
+            return false;
+        }
+
+        if (!is_array($config)) {
+            throw new \RuntimeException('Config field [fillable_primary_keys] must be a boolean or an array of column names/patterns.');
+        }
+
+        foreach ($config as $pattern) {
+            if (Str::is($pattern, $column)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

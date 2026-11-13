@@ -41,6 +41,14 @@ Tracks identified improvements, their status, and implementation notes.
 
 ---
 
+## Mass Assignment
+
+- [x] **Per-table fillable primary keys**
+  Primary key columns were always removed from `$fillable`, which blocked mass assignment of non-auto-increment string keys. The new `fillable_primary_keys` config key accepts `true` (all primary key columns) or an array of column names/`Str::is` patterns, and can be enabled for a single table via a root-level table block. An explicit `guarded` pattern still wins.
+  _Implemented in `src/Coders/Model/Model.php` and `config/models.php`_
+
+---
+
 ## Artisan Command
 
 - [ ] **#3 — Multi-connection single run**

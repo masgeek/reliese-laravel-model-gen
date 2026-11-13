@@ -320,6 +320,28 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Fillable Primary Keys
+        |--------------------------------------------------------------------------
+        |
+        | Primary key columns are excluded from $fillable by default. Set this
+        | to true to allow mass assignment of every primary key column, or to
+        | an array of column names/patterns to allow only specific ones.
+        |
+        | Use a root-level table block to enable it for a single table:
+        |
+        | 'fertilizer_types' => [
+        |     'fillable_primary_keys' => true,
+        | ],
+        |
+        | An explicit 'guarded' pattern still takes precedence, and this has no
+        | effect on views (view models are always guarded).
+        |
+        */
+
+        'fillable_primary_keys' => false,
+
+        /*
+        |--------------------------------------------------------------------------
         | Casts
         |--------------------------------------------------------------------------
         |

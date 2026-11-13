@@ -199,6 +199,28 @@ the database name; for PostgreSQL it is the schema namespace.
 Table blocks (and their casts) do not apply to tables matched by `except`. Generate
 one explicitly with `code:models --table=<name>` if needed.
 
+#### Fillable primary keys
+
+Primary key columns are excluded from `$fillable` by default, so a non-auto-increment
+key such as `fertilizer_types.type` cannot be mass assigned. Enable it per table with
+`fillable_primary_keys`:
+
+```php
+'fertilizer_types' => [
+    'fillable_primary_keys' => true,
+],
+```
+
+Use an array of column names or `Str::is` patterns to allow only specific columns of
+a composite key:
+
+```php
+'fillable_primary_keys' => ['type', 'code_*'],
+```
+
+An explicit `guarded` pattern still wins, and the setting has no effect on view models
+(views are always guarded).
+
 #### Controlling the generation order
 
 Models are generated in alphabetical table order by default. To control the
